@@ -1,0 +1,21 @@
+{"name":"deadunit",
+ "description": "A dead-simple nestable unit testing library for javascript and node.js.",
+ "keywords": ["unit", "test", "testing", "javascript", "node"],
+ "version":"0.1.0",
+ "dependencies":[
+     "colors",
+     "git+https://git@github.com/fresheneesz/nodejsUtils.git#14de276e0716a11b922240c567f9324a33a67102"
+ ],
+ "author": "Billy Tetrud <bitetrudpublic@gmail.com> (https://github.com/fresheneesz/)",
+ "license": {
+   "name": "MIT",
+   "url": "http://www.opensource.org/licenses/mit-license.php"
+ },
+ "repository": {
+   "type": "git",
+   "url": "git://github.com/fresheneesz/deadunit"
+ },
+ "scripts": {
+   "test": "node tests/test.js"
+ }
+}
