@@ -1,5 +1,5 @@
 var formatBasic = require("./basicFormatter")
-
+var indent = require("./indent")
 
 exports.text = function textOutput(unitTest, consoleColoring) {
 
@@ -20,9 +20,9 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             var addResults = function() {
                 var result = ''
                 if(testResults.length > 0)
-                    result += '\n'+utils.indent('   ', testResults.join('\n'))
+                    result += '\n'+indent('   ', testResults.join('\n'))
                 if(exceptionResults.length > 0)
-                    result += '\n'+utils.indent('   ', exceptionResults.join('\n'))
+                    result += '\n'+indent('   ', exceptionResults.join('\n'))
                 return result
             }
 
@@ -77,8 +77,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 expectations += ", Got "+result.actual
             }
 
-            return color(c, word)+" "+test
-                        +" ["+color('grey', ":"+result.file)+" "+result.line+color('grey', ":"+result.column)+"] "
+            return color(c, word)+" "+" ["+color('grey', ":"+result.file)+" "+result.line+color('grey', ":"+result.column)+"] "
                         +color(c, linesDisplay)
                         +expectations
         },
@@ -89,7 +88,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
     })
 }
 
-exports.html = function(test) {
+exports.html = function() {
 
     var getSqoolUnitTester = function() {
         return {
@@ -118,7 +117,7 @@ exports.html = function(test) {
         '<script type="text/javascript">                      \
              var SqoolUnitTester = ('+getSqoolUnitTester+')() \
           </script>'+
-        formatBasic(test, {
+        formatBasic(this, {
             group: function(name, testSuccesses, testFailures, assertSuccesses, assertFailures, exceptions, testResults) {
                 var nameLine = ""
                 if(name)
@@ -230,4 +229,25 @@ exports.html = function(test) {
                 return '<span style="color:red;">Exception:</span> '+exception.stack;
             }
         })
+}
+
+var getMainId = function(name) {
+    return 'unitTest_'+name.replace(/[^a-zA-Z]/g, "") // get rid of all characters except letters
+}
+var getNewNumber = function() {
+    getNewNumber.n++
+    return getNewNumber.n
+}
+getNewNumber.n = 0
+
+function plural(num, plural, singular) {
+	var plur = num!==1;
+
+    if(singular === undefined) {
+    	if(plur)	return "s"
+        else        return ""
+    } else {
+    	if(plur)	return plural
+        else		return singular
+    }
 }

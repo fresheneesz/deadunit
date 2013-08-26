@@ -4,7 +4,7 @@
  "version":"0.1.0",
  "dependencies":[
      "colors",
-     "git+https://git@github.com/fresheneesz/nodejsUtils.git#14de276e0716a11b922240c567f9324a33a67102"
+     "stack-trace"
  ],
  "author": "Billy Tetrud <bitetrudpublic@gmail.com> (https://github.com/fresheneesz/)",
  "license": {

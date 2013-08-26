@@ -1,7 +1,7 @@
 "use strict";
 
-var Unit = require('../unit')
-var utils = require('nodejsUtils/utils')
+var Unit = require('../deadunit')
+var indent = require("../indent")
 var Future = require('nodejsUtils/asyncFuture')
 
 var futuresToWaitOn = []
@@ -42,7 +42,7 @@ var testGroups = Unit.test("Testing the Unit Tester", function() {
 function stringTestResults(test) {
 	if(test.type == 'group') {
 		var results = '[ '+test.results.map(function(x) {
-            return utils.indent("  ",stringTestResults(x))
+            return indent("  ",stringTestResults(x))
         }).join(",\n").trim()+"\n"
         +"]"
 
@@ -50,7 +50,7 @@ function stringTestResults(test) {
 
 		return  "{ type: "+test.type+",\n"
 		       +"  name: "+test.name+",\n"
-		       +"  results: \n"+utils.indent("  ",results)+",\n"
+		       +"  results: \n"+indent("  ",results)+",\n"
 			   +"  exceptions: "+exceptionMessages+",\n"
 			   +"}"
 	} else {
