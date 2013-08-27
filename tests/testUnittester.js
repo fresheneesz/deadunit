@@ -2,7 +2,7 @@
 
 var Unit = require('../deadunit')
 var indent = require("../indent")
-var Future = require('nodejsUtils/asyncFuture')
+var Future = require('asyncFuture')
 
 var futuresToWaitOn = []
 

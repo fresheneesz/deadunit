@@ -2,10 +2,13 @@
  "description": "A dead-simple nestable unit testing library for javascript and node.js.",
  "keywords": ["unit", "test", "testing", "javascript", "node"],
  "version":"0.1.0",
- "dependencies":[
-     "colors",
-     "stack-trace"
- ],
+ "dependencies":{
+     "colors":"",
+     "stack-trace":""
+ },
+ "devDependencies": {
+	"asyncFuture":"git+https://git@github.com/fresheneesz/asyncFuture.git#de90a0b859006da5da0711ee774ff8e9cbe75a79"
+ },
  "author": "Billy Tetrud <bitetrudpublic@gmail.com> (https://github.com/fresheneesz/)",
  "license": {
    "name": "MIT",

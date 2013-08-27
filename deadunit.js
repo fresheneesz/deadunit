@@ -3,6 +3,7 @@
 
 var fs = require('fs')
 var path = require('path')
+var domain = require('domain').create
 
 require('colors')
 var stackTrace = require('stack-trace')
