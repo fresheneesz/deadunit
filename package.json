@@ -7,7 +7,7 @@
      "stack-trace":""
  },
  "devDependencies": {
-	"asyncFuture":"git+https://git@github.com/fresheneesz/asyncFuture.git#de90a0b859006da5da0711ee774ff8e9cbe75a79"
+	"asyncFuture":"git+https://git@github.com/fresheneesz/asyncFuture.git#e26c29c76d840b6dfe2f00b64f16d4a8d67a5508"
  },
  "author": "Billy Tetrud <bitetrudpublic@gmail.com> (https://github.com/fresheneesz/)",
  "license": {

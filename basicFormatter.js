@@ -1,6 +1,6 @@
 
 // built in test formatting helper
-exports.formatBasic = function(unitTest, format) {
+module.exports = function(unitTest, format) {
     //group, assert, exception
 
     return formatGroup(unitTest.results(), format, 0).result;
