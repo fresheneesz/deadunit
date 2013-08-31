@@ -71,7 +71,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             }
 
             var expectations = ""
-            if(result.actual) {
+            if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
                 if(result.expected)
                     expectations = "  -  Expected "+result.expected
                 expectations += ", Got "+result.actual

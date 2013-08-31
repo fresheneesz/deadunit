@@ -1,4 +1,4 @@
 Deadunit
 ========
 
-A dead-simple nestable unit testing library. 
+A dead-simple nesting unit testing library. 
