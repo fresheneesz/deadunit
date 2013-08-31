@@ -5,7 +5,6 @@ var fs = require('fs')
 var path = require('path')
 var domain = require('domain').create
 
-require('colors')
 var stackTrace = require('stack-trace')
 
 var defaultFormats = require('./defaultFormats')
@@ -33,7 +32,7 @@ var formatBasic = exports.formatBasic = require('./basicFormatter')
 // default
 var unhandledErrorHandler = function(e) {
     setTimeout(function() { //  nextTick
-        console.log(e.toString().red)
+        console.log(e.toString())
     },0)
 }
 

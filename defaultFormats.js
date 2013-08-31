@@ -2,6 +2,7 @@ var formatBasic = require("./basicFormatter")
 var indent = require("./indent")
 
 exports.text = function textOutput(unitTest, consoleColoring) {
+    if(consoleColoring) require('colors')
 
     function color(theColor, theString) {
         if(consoleColoring)
