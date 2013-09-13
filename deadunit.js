@@ -12,18 +12,13 @@ var formatBasic = exports.formatBasic = require('./basicFormatter')
 
 
 /*  todo:
-    * default html reporter
     * report the amount of time a test took
+    * write documentation (include a note/recommendation on how to handle asynchronous tests - use asyncFuture)
+    * default html reporter
+    * split deadunit into a core project and a full project (basically separate the data output from the visual output)
+    * Allow actual and expected to be set as undefined (without causing them to not show up)
     * do something about the dependence on node.js domains
     * allow individual tests be cherry picked (for rerunning tests or testing specific things in development)
-    * some kind of helper handling for asynchronous crap - QUnit has a function that's called once asynchronous functions are done
-        * you'd either have to know beforehand the number of 'start's you're
-        * Mocha allows you to pass a callback to a test group, in which case it will wait for the "done" call
-            * this might need to be extended a bit if you have multiple callbacks that must happen before its really "done"
-            * Tho maybe a test case can be aware of all the callbacks that have been setup and wait for a done on each of them
-    * Note that a test group can have setup right in the test group construction
-        * add something to allow teardown after a test group is completed
-        * better yet, check out jasmine's beforeEach and afterEach
     * stream semantics for faster running tests (maybe?)
  */
 
@@ -53,7 +48,10 @@ exports.test = function(/*mainName=undefined, groups*/) {
         var mainTest = arguments[1]
     }
 
+    //var testStart = new Date()
 	var testResults = testGroup(new UnitTester(mainName), mainTest)
+
+
 	return new UnitTest(testResults)
 }
 
@@ -76,7 +74,7 @@ function testGroup(tester, test) {
 
         if(tester.countInfo !== undefined) {
             var info = tester.countInfo
-            tester.ok(tester.numberOfAsserts === info.expectedAsserts, tester.numberOfAsserts, info.expectedAsserts, 'count', undefined, info.lineInfo)
+            assert(tester, tester.numberOfAsserts === info.expectedAsserts, tester.numberOfAsserts, info.expectedAsserts, 'count', info.lineInfo)
         }
     })
 
@@ -90,7 +88,7 @@ function testGroup(tester, test) {
 	}
 }
 
-
+// the prototype of objects used to write tests and contain the results of tests
 var UnitTester = function(name, mainTester) {
 	if(!mainTester) mainTester = this
 
@@ -103,33 +101,32 @@ var UnitTester = function(name, mainTester) {
 
     UnitTester.prototype = {
     	test: function(name, test) {
+            //var beforeStart = new Date()
+
+            if(this.beforeFn)
+                this.beforeFn.call(this, this)
+
+            //var testStart = new Date()
 			var tester = new UnitTester(name, this.mainTester)
-			this.results.push(testGroup(tester, test))
+            var result = testGroup(tester, test)
+			this.results.push(result)
+
+            ///this.testDuration = (new Date()).getTime() - testStart.getTime()
+            this.numberOfAsserts += tester.numberOfAsserts
+
+            if(this.afterFn)
+                this.afterFn.call(this, this)
+
+            //this.totalDuration = (new Date()).getTime() - beforeStart.getTime()
 		},
 
-        ok: function(success, actualValue, expectedValue, functionName/*="ok"*/, stackIncrease/*=0*/, lineInfo/*=dynamic*/) {
-            if(!stackIncrease) stackIncrease = 0
-            if(!functionName) functionName = "ok"
-            if(!lineInfo) lineInfo = getLineInformation(functionName, stackIncrease)
-
+        ok: function(success, actualValue, expectedValue) {
+            assert(this, success, actualValue, expectedValue, "ok")
             this.numberOfAsserts += 1
-
-            var result = lineInfo
-            result.type = 'assert'
-            result.success = success
-
-            if(actualValue)     result.actual = actualValue
-            if(expectedValue)   result.expected = expectedValue
-
-            this.results.push(result)
-
-            if(this.mainTester.resultsAccessed) {
-                 unhandledErrorHandler(Error("Test results were accessed before asynchronous parts of tests were fully complete."+
-                                 " Got assert result: "+ JSON.stringify(result)))
-            }
         },
         equal: function(expectedValue, testValue) {
-            this.ok(expectedValue === testValue, expectedValue, testValue, "equal", 1)
+            assert(this, expectedValue === testValue, expectedValue, testValue, "equal")
+            this.numberOfAsserts += 1
         },
         count: function(number) {
             if(this.expectedAsserts !== undefined)
@@ -140,6 +137,19 @@ var UnitTester = function(name, mainTester) {
             }
         },
 
+        before: function(fn) {
+            if(this.beforeFn !== undefined)
+                throw Error("before called multiple times for this test")
+
+            this.beforeFn = fn
+        },
+        after: function(fn) {
+            if(this.afterFn !== undefined)
+                throw Error("after called multiple times for this test")
+
+            this.afterFn = fn
+        },
+
         log: function(msg) {
             this.results.push({
                 type: 'log',
@@ -148,6 +158,27 @@ var UnitTester = function(name, mainTester) {
         }
     }
 
+function assert(that, success, actualValue, expectedValue, functionName/*="ok"*/, lineInfo/*=dynamic*/, stackIncrease/*=0*/) {
+    if(!stackIncrease) stackIncrease = 1
+    if(!functionName) functionName = "ok"
+    if(!lineInfo) lineInfo = getLineInformation(functionName, stackIncrease)
+
+    var result = lineInfo
+    result.type = 'assert'
+    result.success = success
+
+    if(actualValue !== undefined)     result.actual = actualValue
+    if(expectedValue !== undefined)   result.expected = expectedValue
+
+    that.results.push(result)
+
+    if(that.mainTester.resultsAccessed) {
+         unhandledErrorHandler(Error("Test results were accessed before asynchronous parts of tests were fully complete."+
+                         " Got assert result: "+ JSON.stringify(result)))
+    }
+}
+
+// the prototype of objects used to manage accessing and displaying results of a unit test
 var UnitTest = function(test) {
     this.results = function() {
         // resultsAccessed allows the unit test to do special alerting if asynchronous tests aren't completed before the test is completed

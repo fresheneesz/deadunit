@@ -73,9 +73,13 @@ exports.text = function textOutput(unitTest, consoleColoring) {
 
             var expectations = ""
             if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
-                if(result.expected)
-                    expectations = "  -  Expected "+result.expected
-                expectations += ", Got "+result.actual
+                var things = []
+                if(result.expected !== undefined)
+                    things.push("Expected "+result.expected)
+                if(result.actual !== undefined)
+                    things.push("Got "+result.actual)
+
+                expectations = " - "+things.join(', ')
             }
 
             return color(c, word)+" "+" ["+color('grey', ":"+result.file)+" "+result.line+color('grey', ":"+result.column)+"] "

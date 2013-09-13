@@ -69,21 +69,20 @@ function stringTestResults(test) {
 
 Future.all(futuresToWaitOn).then(function() {
 
-
-
-    // Unit test the results
-
     var mainTest = Unit.test("Unit test the unit test-results (these should all succeed)", function() {
         var test = testGroups.results()
 
         this.ok(test.type === "group")
         this.ok(test.name === "Testing the Unit Tester")
+        //this.ok(test.testDuration !== undefined && test.testDuration > 0 && test.testDuration < 10, test.testDuration)
         this.ok(test.exceptions.length === 0)
-        this.ok(test.results.length === 2)
+        this.ok(test.results.length === 2, test.results.length)
 
             var subtest1 = test.results[0]
             this.ok(subtest1.type === "group")
             this.ok(subtest1.name === "Test Some Stuff")
+            //this.ok(subtest1.testDuration !== undefined && subtest1.testDuration > 0 && subtest1.testDuration < 10, subtest1.testDuration)
+            //this.ok(subtest1.totalDuration !== undefined && subtest1.totalDuration >= subtest1.testDuration)  // totalDuration is the duration including before and after
             this.ok(subtest1.exceptions.length === 0)
             this.ok(subtest1.results.length === 5, subtest1.results.length)
 
@@ -103,6 +102,7 @@ Future.all(futuresToWaitOn).then(function() {
 
                 subtest2 = subtest1.results[1]
                 this.ok(subtest2.name === "shouldFail")
+                //this.ok(subtest2.testDuration !== undefined && subtest2.testDuration > 0 && subtest2.testDuration < 10, subtest2.testDuration)
                 this.ok(subtest2.exceptions.length === 0)
                 this.ok(subtest2.results.length === 4, subtest2.results.length)
 
@@ -123,12 +123,13 @@ Future.all(futuresToWaitOn).then(function() {
                     this.ok(subtest3.type === "log")
                     this.ok(subtest3.msg === "test log")
 
-                    subtest3 = subtest2.results[3]
+                    subtest3 = subtest2.results[3]      // count
                     this.ok(subtest3.type === "assert", subtest3.type)
                     this.ok(subtest3.success === false, subtest3.success)
 
                 subtest2 = subtest1.results[2]
                 this.ok(subtest2.name === "shouldThrowException")
+                //this.ok(subtest2.testDuration !== undefined && subtest2.testDuration > 0 && subtest2.testDuration < 10, subtest2.testDuration)
                 this.ok(subtest2.exceptions.length === 1)
                 this.ok(subtest2.exceptions[0].message === "Ahhhhh!")
                 this.ok(subtest2.results.length === 2, subtest2.results.length)
@@ -136,7 +137,7 @@ Future.all(futuresToWaitOn).then(function() {
                     subtest3 = subtest2.results[0]
                     this.ok(subtest3.success === true)
 
-                    subtest3 = subtest2.results[1]
+                    subtest3 = subtest2.results[1]     // count
                     this.ok(subtest3.success === true)
 
                 subtest2 = subtest1.results[3]
@@ -144,6 +145,9 @@ Future.all(futuresToWaitOn).then(function() {
                 this.ok(subtest2.exceptions.length === 1)
                 this.ok(subtest2.exceptions[0].message === "Asynchronous Ahhhhh!")
                 this.ok(subtest2.results.length === 0)
+
+                subtest2 = subtest1.results[4]     // count
+                this.ok(subtest2.success === true)
 
             subtest1 = test.results[1]
             this.ok(subtest1.name === "SuccessfulTestGroup")
@@ -159,6 +163,33 @@ Future.all(futuresToWaitOn).then(function() {
                     this.ok(subtest3.success === true)
                     this.ok(subtest3.sourceLines.join("\n").indexOf("true") !== -1)
 
+
+        this.test("befores and afters", function() {
+            var x = 0
+            var that = this
+
+            this.before(function(that2) {
+                this.ok(this === that)
+                this.ok(this === that2)
+                this.log("before: "+x)
+                x++
+            })
+            this.after(function(that2) {
+                this.ok(this === that)
+                this.ok(this === that2)
+                this.log("after: "+x)
+                x+=10
+            })
+
+            this.test("one", function() {
+                this.log("x is: "+x)
+                this.ok(x===1, x)
+            })
+            this.test("two", function() {
+                this.ok(x===12, x)
+            })
+        })
+
     })
 
     mainTest.writeConsole()
@@ -168,7 +199,7 @@ Future.all(futuresToWaitOn).then(function() {
 
 
 
-    console.log("\n--Displaying the results visually--\n");
+    console.log("\n\n\n--Displaying the results visually--\n\n");
 
 
 
