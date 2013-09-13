@@ -48,9 +48,9 @@ exports.test = function(/*mainName=undefined, groups*/) {
         var mainTest = arguments[1]
     }
 
-    //var testStart = new Date()
+    var testStart = new Date()
 	var testResults = testGroup(new UnitTester(mainName), mainTest)
-
+    testResults.testDuration = testResults.totalDuration = (new Date()).getTime() - testStart.getTime()
 
 	return new UnitTest(testResults)
 }
@@ -101,23 +101,24 @@ var UnitTester = function(name, mainTester) {
 
     UnitTester.prototype = {
     	test: function(name, test) {
-            //var beforeStart = new Date()
+            var beforeStart = new Date()
 
             if(this.beforeFn)
                 this.beforeFn.call(this, this)
 
-            //var testStart = new Date()
+            var testStart = new Date()
 			var tester = new UnitTester(name, this.mainTester)
             var result = testGroup(tester, test)
-			this.results.push(result)
+            result.testDuration = (new Date()).getTime() - testStart.getTime()
 
-            ///this.testDuration = (new Date()).getTime() - testStart.getTime()
             this.numberOfAsserts += tester.numberOfAsserts
 
             if(this.afterFn)
                 this.afterFn.call(this, this)
 
-            //this.totalDuration = (new Date()).getTime() - beforeStart.getTime()
+            result.totalDuration = (new Date()).getTime() - beforeStart.getTime()
+
+            this.results.push(result)
 		},
 
         ok: function(success, actualValue, expectedValue) {

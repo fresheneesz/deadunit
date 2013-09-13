@@ -12,7 +12,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
     }
 
     return formatBasic(unitTest, {
-        group: function(name, testSuccesses, testFailures,
+        group: function(name, duration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel) {
 
@@ -43,6 +43,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
+                        +" Took "+duration+"ms."
 
                 var result = ''
                 if(name) result += color('cyan', name)+'\n'
@@ -52,6 +53,10 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptions+" exception"+plural(exceptions))
+                                +" took "+duration+"ms"
+                if(totalDuration/duration > 2) {
+                    result += " "+color('grey', "("+totalDuration+"ms including setup and teardown)")
+                }
                 result += addResults()
             }
 
@@ -82,7 +87,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 expectations = " - "+things.join(', ')
             }
 
-            return color(c, word)+" "+" ["+color('grey', ":"+result.file)+" "+result.line+color('grey', ":"+result.column)+"] "
+            return color(c, word)+" "+" ["+color('grey', result.file)+" "+result.line+color('grey', ":"+result.column)+"] "
                         +color(c, linesDisplay)
                         +expectations
         },

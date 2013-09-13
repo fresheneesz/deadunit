@@ -39,6 +39,19 @@ var testGroups = Unit.test("Testing the Unit Tester", function() {
 			this.equal(true, true)
 		})
 	})
+
+    this.test("long before/after", function() {
+        var x = 0
+        this.before(function() {
+            for(var n=0; n<1000000; n++) {
+                x += x+1
+            }
+        })
+
+        this.test("one", function() {
+            this.ok(x === Infinity, x)
+        })
+    })
 })
 
 function stringTestResults(test) {
@@ -74,15 +87,15 @@ Future.all(futuresToWaitOn).then(function() {
 
         this.ok(test.type === "group")
         this.ok(test.name === "Testing the Unit Tester")
-        //this.ok(test.testDuration !== undefined && test.testDuration > 0 && test.testDuration < 10, test.testDuration)
+        this.ok(test.testDuration !== undefined && test.testDuration > 0 && test.testDuration < 10, test.testDuration)
         this.ok(test.exceptions.length === 0)
-        this.ok(test.results.length === 2, test.results.length)
+        this.ok(test.results.length === 3, test.results.length)
 
             var subtest1 = test.results[0]
             this.ok(subtest1.type === "group")
             this.ok(subtest1.name === "Test Some Stuff")
-            //this.ok(subtest1.testDuration !== undefined && subtest1.testDuration > 0 && subtest1.testDuration < 10, subtest1.testDuration)
-            //this.ok(subtest1.totalDuration !== undefined && subtest1.totalDuration >= subtest1.testDuration)  // totalDuration is the duration including before and after
+            this.ok(subtest1.testDuration !== undefined && subtest1.testDuration > 0 && subtest1.testDuration < 100, subtest1.testDuration)
+            this.ok(subtest1.totalDuration !== undefined && subtest1.totalDuration >= subtest1.testDuration)  // totalDuration is the duration including before and after
             this.ok(subtest1.exceptions.length === 0)
             this.ok(subtest1.results.length === 5, subtest1.results.length)
 
@@ -102,7 +115,7 @@ Future.all(futuresToWaitOn).then(function() {
 
                 subtest2 = subtest1.results[1]
                 this.ok(subtest2.name === "shouldFail")
-                //this.ok(subtest2.testDuration !== undefined && subtest2.testDuration > 0 && subtest2.testDuration < 10, subtest2.testDuration)
+                this.ok(subtest2.testDuration !== undefined && subtest2.testDuration >= 0 && subtest2.testDuration < 10, subtest2.testDuration)
                 this.ok(subtest2.exceptions.length === 0)
                 this.ok(subtest2.results.length === 4, subtest2.results.length)
 
@@ -129,7 +142,7 @@ Future.all(futuresToWaitOn).then(function() {
 
                 subtest2 = subtest1.results[2]
                 this.ok(subtest2.name === "shouldThrowException")
-                //this.ok(subtest2.testDuration !== undefined && subtest2.testDuration > 0 && subtest2.testDuration < 10, subtest2.testDuration)
+                this.ok(subtest2.testDuration !== undefined && subtest2.testDuration >= 0 && subtest2.testDuration < 10, subtest2.testDuration)
                 this.ok(subtest2.exceptions.length === 1)
                 this.ok(subtest2.exceptions[0].message === "Ahhhhh!")
                 this.ok(subtest2.results.length === 2, subtest2.results.length)
