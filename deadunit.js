@@ -12,7 +12,6 @@ var formatBasic = exports.formatBasic = require('./basicFormatter')
 
 
 /*  todo:
-    * report the amount of time a test took
     * write documentation (include a note/recommendation on how to handle asynchronous tests - use asyncFuture)
     * default html reporter
     * split deadunit into a core project and a full project (basically separate the data output from the visual output)
