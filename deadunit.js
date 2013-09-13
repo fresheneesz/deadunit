@@ -12,7 +12,6 @@ var formatBasic = exports.formatBasic = require('./basicFormatter')
 
 
 /*  todo:
-    * a way to specify how many asserts a test should expect to get
     * default html reporter
     * report the amount of time a test took
     * do something about the dependence on node.js domains
@@ -61,10 +60,10 @@ exports.test = function(/*mainName=undefined, groups*/) {
 function testGroup(tester, test) {
     var d = domain()
     d.on('error', function(err) {
-        tester.exceptions.push(e)
+        tester.exceptions.push(err)
         if(tester.mainTester.resultsAccessed) {
             unhandledErrorHandler(Error("Test results were accessed before asynchronous parts of tests were fully complete."
-                                         +" Got error: "+ e.message+" "+ e.stack))
+                                         +" Got error: "+ err.message+" "+ err.stack))
         }
     })
 
@@ -73,6 +72,11 @@ function testGroup(tester, test) {
             test.call(tester, tester) // tester is both 'this' and the first parameter (for flexibility)
         } catch(e) {
             tester.exceptions.push(e)
+        }
+
+        if(tester.countInfo !== undefined) {
+            var info = tester.countInfo
+            tester.ok(tester.numberOfAsserts === info.expectedAsserts, tester.numberOfAsserts, info.expectedAsserts, 'count', undefined, info.lineInfo)
         }
     })
 
@@ -94,6 +98,7 @@ var UnitTester = function(name, mainTester) {
 	this.name = name
     this.results = []
     this.exceptions = []
+    this.numberOfAsserts = 0
 }
 
     UnitTester.prototype = {
@@ -102,28 +107,16 @@ var UnitTester = function(name, mainTester) {
 			this.results.push(testGroup(tester, test))
 		},
 
-        ok: function(success, actualValue, expectedValue, functionName, stackIncrease/*=0*/) {
+        ok: function(success, actualValue, expectedValue, functionName/*="ok"*/, stackIncrease/*=0*/, lineInfo/*=dynamic*/) {
             if(!stackIncrease) stackIncrease = 0
             if(!functionName) functionName = "ok"
+            if(!lineInfo) lineInfo = getLineInformation(functionName, stackIncrease)
 
-            var backTrace = stackTrace.get();
-            var stackPosition = backTrace[1+stackIncrease]
+            this.numberOfAsserts += 1
 
-            var filename = stackPosition.getFileName()
-            var lineNumber = stackPosition.getLineNumber()
-            var column = stackPosition.getColumnNumber()
-
-            var sourceLines = getFunctionCallLines(filename, functionName, lineNumber)
-
-            var result = {
-            	type: 'assert',
-                success:success,
-
-                sourceLines: sourceLines,
-                file: path.basename(filename),
-                line: lineNumber,
-                column: column
-            }
+            var result = lineInfo
+            result.type = 'assert'
+            result.success = success
 
             if(actualValue)     result.actual = actualValue
             if(expectedValue)   result.expected = expectedValue
@@ -137,6 +130,14 @@ var UnitTester = function(name, mainTester) {
         },
         equal: function(expectedValue, testValue) {
             this.ok(expectedValue === testValue, expectedValue, testValue, "equal", 1)
+        },
+        count: function(number) {
+            if(this.expectedAsserts !== undefined)
+                throw Error("count called multiple times for this test")
+            this.countInfo = {
+                expectedAsserts: number,
+                lineInfo: getLineInformation('count', 0)
+            }
         },
 
         log: function(msg) {
@@ -168,6 +169,24 @@ var UnitTest = function(test) {
     UnitTest.prototype.html = defaultFormats.html
 
 
+
+function getLineInformation(functionName, stackIncrease) {
+    var backTrace = stackTrace.get();
+    var stackPosition = backTrace[2+stackIncrease]
+
+    var filename = stackPosition.getFileName()
+    var lineNumber = stackPosition.getLineNumber()
+    var column = stackPosition.getColumnNumber()
+
+    var sourceLines = getFunctionCallLines(filename, functionName, lineNumber)
+
+    return {
+        sourceLines: sourceLines,
+        file: path.basename(filename),
+        line: lineNumber,
+        column: column
+    }
+}
 
 // gets the actual lines of the call
 // todo: make this work when call is over multiple lines (you would need to count parens and check for quotations)
