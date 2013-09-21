@@ -12,6 +12,7 @@ var formatBasic = exports.formatBasic = require('./basicFormatter')
 
 
 /*  todo:
+	* on process exit, instead of (or in addition to) writing to the console, throw all the exceptions that were caught by the test
     * write documentation (include a note/recommendation on how to handle asynchronous tests - use asyncFuture)
     * default html reporter
     * split deadunit into a core project and a full project (basically separate the data output from the visual output)
@@ -51,7 +52,16 @@ exports.test = function(/*mainName=undefined, groups*/) {
 	var testResults = testGroup(new UnitTester(mainName), mainTest)
     testResults.testDuration = testResults.totalDuration = (new Date()).getTime() - testStart.getTime()
 
-	return new UnitTest(testResults)
+	var test = new UnitTest(testResults)
+	
+	process.on('exit', function() {
+		if(!testResults.tester.resultsAccessed) {
+			test.writeConsole()
+			throw Error("Deadunit test results never accessed - something is amiss...")
+		}		
+	})
+	
+	return test
 }
 
 function testGroup(tester, test) {

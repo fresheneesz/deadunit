@@ -87,7 +87,7 @@ Future.all(futuresToWaitOn).then(function() {
 
         this.ok(test.type === "group")
         this.ok(test.name === "Testing the Unit Tester")
-        this.ok(test.testDuration !== undefined && test.testDuration > 0 && test.testDuration < 10, test.testDuration)
+        this.ok(test.testDuration !== undefined && test.testDuration > 0, test.testDuration)
         this.ok(test.exceptions.length === 0)
         this.ok(test.results.length === 3, test.results.length)
 
@@ -254,3 +254,10 @@ Future.all(futuresToWaitOn).then(function() {
     */
 
 }).done()
+
+
+console.log('expecting an error below from an unaccessed test')
+
+Unit.test("something", function() {})
+
+
