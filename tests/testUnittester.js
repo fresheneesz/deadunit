@@ -82,6 +82,7 @@ function stringTestResults(test) {
 
 Future.all(futuresToWaitOn).then(function() {
 
+    var moreFutures = []
     var mainTest = Unit.test("Unit test the unit test-results (these should all succeed)", function() {
         var test = testGroups.results()
 
@@ -203,9 +204,29 @@ Future.all(futuresToWaitOn).then(function() {
             })
         })
 
+        this.test("Asynchronous counts", function(t) {
+            this.count(3)
+
+            this.ok(true)
+            var f1 = new Future
+            setTimeout(function() {
+                t.ok(true)
+                f1.return()
+            }, 100)
+            var f2 = new Future
+            setTimeout(function() {
+                t.ok(true)
+                f2.return()
+            }, 200)
+
+            moreFutures.push(f1,f2)
+        })
+
     })
 
-    mainTest.writeConsole()
+    Future.all(moreFutures).then(function() {
+        mainTest.writeConsole()
+    })
 
     //console.log(stringTestResults(testGroups.results()))
     //console.log(" ----------- ")
@@ -229,7 +250,7 @@ Future.all(futuresToWaitOn).then(function() {
     var simpleAsyncExceptionFuture = new Future()
     var simpleAsyncException = Unit.test(function() {
         setTimeout(function() {
-            f.return()
+            simpleAsyncExceptionFuture.return()
             throw Error("Async")
         }, 0)
     })
@@ -252,12 +273,12 @@ Future.all(futuresToWaitOn).then(function() {
     //console.log(testGroups.html())		// returns html
     /*testGroups.write.html()			// appends html to the current (html) page the tests are running in
     */
+}).then(function() {
+    console.log('expecting an error below from an unaccessed test')
+    Unit.test("something", function() {})
 
 }).done()
 
 
-console.log('expecting an error below from an unaccessed test')
-
-Unit.test("something", function() {})
 
 

@@ -80,11 +80,6 @@ function testGroup(tester, test) {
         } catch(e) {
             tester.exceptions.push(e)
         }
-
-        if(tester.countInfo !== undefined) {
-            var info = tester.countInfo
-            assert(tester, tester.numberOfAsserts === info.expectedAsserts, tester.numberOfAsserts, info.expectedAsserts, 'count', info.lineInfo)
-        }
     })
 
 	return {
@@ -188,9 +183,28 @@ function assert(that, success, actualValue, expectedValue, functionName/*="ok"*/
     }
 }
 
+function eachTest(test, callback) {
+    callback(test)
+    test.results.forEach(function(result) {
+        if(result.type === 'group') {
+            eachTest(result, callback)
+        }
+    })
+}
+
 // the prototype of objects used to manage accessing and displaying results of a unit test
 var UnitTest = function(test) {
     this.results = function() {
+        if(!test.tester.resultsAccessed) { // if its the first time results were grabbed
+            eachTest(test, function(subtest) {
+                console.log(test.tester.name)
+                if(subtest.tester.countInfo !== undefined) {
+                    var info = subtest.tester.countInfo
+                    assert(subtest.tester, subtest.tester.numberOfAsserts === info.expectedAsserts, subtest.tester.numberOfAsserts, info.expectedAsserts, 'count', info.lineInfo)
+                }
+            })
+        }
+
         // resultsAccessed allows the unit test to do special alerting if asynchronous tests aren't completed before the test is completed
 		test.tester.resultsAccessed = true
         return test
