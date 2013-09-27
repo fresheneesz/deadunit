@@ -55,7 +55,8 @@ var Unit = require('deadunit')
 * `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
     * `format.assert(result, testName)`
     * `format.exception(exception)`
-    * `format.group(testName, testDuration, totalDuration, testCaseSuccesses, testCaseFailures, assertSuccesses, assertFailures, exceptions, results, exceptionResults, nestingLevel)`
+    * `format.group(testName, testDuration, totalDuration, testCaseSuccesses, testCaseFailures, assertSuccesses,`  
+`assertFailures, exceptions, results, exceptionResults, nestingLevel)`
     * `format.log(message)`
 
 For documentation on how to write unit tests, see [deadunit-core](https://github.com/fresheneesz/deadunitCore).
