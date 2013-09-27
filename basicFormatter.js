@@ -39,7 +39,7 @@ function formatGroup(test, format, nestingLevel) {
             assertFailures+= group.assertFailures
 
         } else if(result.type === 'log') {
-            results.push(result.msg)
+            results.push(format.log(result.msg))
         } else {
             throw new Error("Unknown result type: "+result.type)
         }

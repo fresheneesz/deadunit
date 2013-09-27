@@ -11,8 +11,9 @@ exports.error = deadunitCore.error
 
 exports.test = proto(deadunitCore.test, function() {
     this.string = // alias
-    this.toString = function() {
-        return defaultFormats.text(this, false)
+    this.toString = function(colorize) {
+        if(colorize === undefined) colorize = false
+        return defaultFormats.text(this, colorize)
     }
 
     this.writeConsole = function() {

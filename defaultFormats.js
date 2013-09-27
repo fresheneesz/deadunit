@@ -94,6 +94,9 @@ exports.text = function textOutput(unitTest, consoleColoring) {
         exception: function(e) {
             return color('red', 'Exception: ')
                         +color('magenta', e.stack)
+        },
+        log: function(msg) {
+            return msg
         }
     })
 }
@@ -237,6 +240,9 @@ exports.html = function() {
             },
             exception: function(exception) {
                 return '<span style="color:red;">Exception:</span> '+exception.stack;
+            },
+            log: function(msg) {
+                return msg
             }
         })
 }

@@ -1,3 +1,5 @@
+**Status**: API finalized, needs testing
+
 `deadunit`
 ========
 
@@ -43,8 +45,39 @@ Unit Tester
 var Unit = require('deadunit')
 ```
 
+`Unit.test([<name>, ]<testFunction>)` - runs a suite of unit tests. Returns an ExtendedUnitTest object.
+
+`Unit.error(<handler>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
+
+`Unit.format(<unitTest>, <format>)` - outputs test results according to the passed in `<format>`.
+
+* `<unitTest>` is a `UnitTest` (or `ExtendedUnitTest`) object
+* `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
+    * `format.assert(result, testName)`
+    * `format.exception(exception)`
+    * `format.group(testName, testDuration, totalDuration, testCaseSuccesses, testCaseFailures, assertSuccesses, assertFailures, exceptions, results, exceptionResults, nestingLevel)`
+    * `format.log(message)`
+
 For documentation on how to write unit tests, see [deadunit-core](https://github.com/fresheneesz/deadunitCore).
 
+ExtendedUnitTest
+----------------
+
+This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz/deadunitCore#unittest). Also has the following methods:
+
+`test.toString(<colorize>)` - returns a string containing formatted test results. *See below for screenshots.*
+
+`test.string(<colorize>)` - alias of `toString`
+
+`test.writeConsole` - writes colorized text output to the console. *See below for screenshots.*
+
+### Screenshots ###
+
+![Simple colorized tests](screenshots/SimpleTestsColorized.png "Simple colorized tests")
+
+![Full colorized test results](screenshots/FullTestColorized.png "Full colorized test results")
+
+![Plain Text Output](screenshots/PlainTextScreenshot.png "Plain Text Output")
 
 Formatter
 ---------
@@ -54,7 +87,8 @@ Formatter
 Todo
 ====
 
-See [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
+* Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
+* Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
 How to Contribute!
 ============
