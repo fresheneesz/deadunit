@@ -49,7 +49,7 @@ var Unit = require('deadunit')
 
 `Unit.error(<handler>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
 
-`Unit.format(<unitTest>, <format>)` - outputs test results according to the passed in `<format>`.
+`Unit.format(<unitTest>, <format>)` - creates custom formatted output for test results according to the passed in `<format>`.
 
 * `<unitTest>` is a `UnitTest` (or `ExtendedUnitTest`) object
 * `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
@@ -78,11 +78,6 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 ![Full colorized test results](screenshots/FullTestColorized.png "Full colorized test results")
 
 ![Plain Text Output](screenshots/PlainTextScreenshot.png "Plain Text Output")
-
-Formatter
----------
-
-(docs coming soon)
 
 Todo
 ====
