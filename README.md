@@ -8,6 +8,16 @@ This repository provides default visual representations for the output of [deadu
   as well as a formatter that can be used to easily create custom test visualizations.
 
 
+Why use it over...
+==================
+
+The only competitive alternative I know is [Wizek's Tree](https://github.com/Wizek/Tree). 
+
+* deadunit is simple, doesn't provide needless sugar (e.g. always-pass/always-fail asserts) or an awkward sentence-like api
+* deadunit doesn't proscribe synchronization for you - it only expects that you make sure your tests finish before you access the resutls.
+
+Then again, tree is designed to work in browsers, whereas deadunit doesn't yet do that.
+
 Example
 =======
 
