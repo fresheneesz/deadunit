@@ -1,14 +1,14 @@
 {"name":"deadunit",
  "description": "A dead-simple nestable unit testing library for javascript and node.js.",
  "keywords": ["unit", "test", "testing", "javascript", "node"],
- "version":"1.0.1",
+ "version":"1.0.2",
  "dependencies":{
      "colors":"",
      "deadunit-core":"",
      "proto":""
  },
  "devDependencies": {
-	"asyncFuture":"git+https://git@github.com/fresheneesz/asyncFuture.git#e26c29c76d840b6dfe2f00b64f16d4a8d67a5508"
+	"async-future":""
  },
  "author": "Billy Tetrud <bitetrudpublic@gmail.com> (https://github.com/fresheneesz/)",
  "license": {
