@@ -101,7 +101,7 @@ How to Contribute!
 
 Anything helps:
 
-* Creating issues (aka tickets/bugs/etc). Please feel free to use issues to report bugs, request features, and discuss changes
+* Creating issues (aka tickets/bugs/etc). Please feel free to use issues to report bugs, request features, and discuss changes.
 * Updating the documentation: ie this readme file. Be bold! Help create amazing documentation!
 * Submitting pull requests.
 
