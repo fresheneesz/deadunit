@@ -91,6 +91,9 @@ Future.all(futuresToWaitOn).then(function() {
     var simpleException = Unit.test(function() {
         throw Error("sync")
     })
+    var simpleExceptionNoTrace = Unit.test(function() {
+        throw "I think I'm an exception"
+    })
 
     var simpleAsyncExceptionFuture = new Future()
     var simpleAsyncException = Unit.test(function() {
@@ -108,6 +111,9 @@ Future.all(futuresToWaitOn).then(function() {
 
     console.log("\nsimple exception")
     simpleException.writeConsole()
+
+    console.log("\nsimple exception without stack trace")
+    simpleExceptionNoTrace.writeConsole()
 
     console.log(testGroups.toString())	// returns plain text
     testGroups.writeConsole() 		// writes color console output

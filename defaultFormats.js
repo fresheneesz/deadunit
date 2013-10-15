@@ -92,8 +92,14 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                         +expectations
         },
         exception: function(e) {
+            if(e.stack !== undefined) {
+                var displayError = e.stack
+            } else {
+                var displayError = e
+            }
+
             return color('red', 'Exception: ')
-                        +color('magenta', e.stack)
+                        +color('magenta', displayError)
         },
         log: function(msg) {
             return msg
