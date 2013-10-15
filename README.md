@@ -93,6 +93,7 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 Todo
 ====
 
+* default html reporter
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 

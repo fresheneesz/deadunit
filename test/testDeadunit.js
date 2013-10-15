@@ -109,18 +109,128 @@ Future.all(futuresToWaitOn).then(function() {
     console.log("\nsimple exception")
     simpleException.writeConsole()
 
-    simpleAsyncExceptionFuture.then(function() {
-        console.log("\nsimple async exception")
-        simpleAsyncException.writeConsole()
-    }).done()
-
-
     console.log(testGroups.toString())	// returns plain text
     testGroups.writeConsole() 		// writes color console output
 
     //console.log(testGroups.html())		// returns html
-    /*testGroups.write.html()			// appends html to the current (html) page the tests are running in
-    */
+    //testGroups.write.html()			// appends html to the current (html) page the tests are running in
+
+
+
+
+    simpleAsyncExceptionFuture.then(function() {
+        console.log("\nsimple async exception")
+        simpleAsyncException.writeConsole()
+
+
+		var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
+            var formatBasic = require("../basicFormatter")
+
+            this.test("simple exception", function(t) {
+                this.count(10)
+                formatBasic(simpleException, {
+                    group: function(name, duration, totalDuration, testSuccesses, testFailures,
+                                          assertSuccesses, assertFailures, exceptions,
+                                          testResults, exceptionResults, nestingLevel) {
+
+                        t.ok(name === undefined)
+                        t.ok(testSuccesses === 0)
+                        t.ok(testFailures === 0)
+                        t.ok(assertSuccesses === 0)
+                        t.ok(assertFailures === 0)
+                        t.ok(exceptions === 1)
+                        t.ok(testResults.length === 0)
+                        t.ok(exceptionResults.length === 1)
+                        t.ok(nestingLevel === 0)
+                    },
+                    assert: function(result, test) {
+                        t.ok(false)
+                    },
+                    exception: function(e) {
+                        t.ok(e.message === 'sync')
+                    },
+                    log: function(msg) {
+                        t.ok(false)
+                    }
+                })
+            })
+
+            this.test("test groups", function(t) {
+                this.count(19)
+                formatBasic(testGroups, {
+                    group: function(name, duration, totalDuration, testSuccesses, testFailures,
+                                          assertSuccesses, assertFailures, exceptions,
+                                          testResults, exceptionResults, nestingLevel) {
+
+                        if(name === "Testing the Unit Tester") {
+                            t.test("Test Some Stuff", function(t) {
+                                t.ok(testSuccesses === 2, testSuccesses)
+                                t.ok(testFailures === 1, testFailures)
+                                t.ok(testResults.length === 3, testResults.length)
+                                t.ok(exceptionResults.length === 0, exceptionResults.length)
+
+                                t.ok(assertSuccesses === 6)
+                                t.ok(assertFailures === 3)
+                                t.ok(exceptions === 2)
+                            })
+
+                        } else if(name === "Test Some Stuff") {
+                            t.test("Test Some Stuff", function(t) {
+                                t.ok(testSuccesses === 2, testSuccesses)
+                                t.ok(testFailures === 3, testFailures)
+                                t.ok(testResults.length === 5, testResults.length)
+                                t.ok(exceptionResults.length === 0, exceptionResults.length)
+                            })
+
+                        } else if(name === "assertSomething") {
+                            t.test("assertSomething", function(t) {
+                                t.ok(testSuccesses === 1, testSuccesses)
+                                t.ok(testFailures === 0, testFailures)
+                                t.ok(testResults.length === 1, testResults.length)
+                                t.ok(exceptionResults.length === 0, exceptionResults.length)
+                            })
+
+                        } else if(name === "shouldFail") {
+                            t.test("shouldFail", function(t) {
+                                t.ok(testSuccesses === 0, testSuccesses)
+                                t.ok(testFailures === 3, testFailures)
+                                t.ok(testResults.length === 4, testResults.length)
+                                t.ok(exceptionResults.length === 0, exceptionResults.length)
+                            })
+
+                        } else if(name === "shouldThrowException") {
+
+                        } else if(name === "should throw an asynchronous exception") {
+
+                        } else if(name === "SuccessfulTestGroup") {
+
+                        } else if(name === "long before/after") {
+
+                        } else if(name === "one") {
+
+                        } else if(name === "yay") {
+
+                        } else {
+                            t.ok(false, name)
+                        }
+                    },
+                    assert: function(result, test) {
+                        //t.ok(false)
+                    },
+                    exception: function(e) {
+                        //t.ok(e.message === 'sync')
+                    },
+                    log: function(msg) {
+                        //t.ok(false)
+                    }
+                })
+            })
+        })
+
+        console.log("")
+        realTest.writeConsole()
+
+    }).done()
 }).done()
 
 

@@ -29,7 +29,7 @@ function formatGroup(test, format, nestingLevel) {
             var group = formatGroup(result, format, nestingLevel+1)
             exceptions+= group.exceptions
 
-            if(group.failures === 0)
+            if(group.failures === 0 && group.exceptions === 0)
                 testCaseSuccesses++
             else
                 testCaseFailures++

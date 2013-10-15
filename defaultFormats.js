@@ -52,7 +52,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             } else {
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
-                                +" and "+color(exceptionColor, exceptions+" exception"+plural(exceptions))
+                                +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
                                 +" took "+duration+"ms"
                 if(totalDuration/duration > 2) {
                     result += " "+color('grey', "("+totalDuration+"ms including setup and teardown)")
