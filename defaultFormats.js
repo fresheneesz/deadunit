@@ -11,8 +11,15 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             return theString.toString()
     }
 
+    function timeText(ms) {
+        if(ms < 2000)
+            return ms+"ms"
+        else
+            return Number(ms/1000).toPrecision(3)+'s'
+    }
+
     return formatBasic(unitTest, {
-        group: function(name, duration, totalDuration, testSuccesses, testFailures,
+        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel) {
 
@@ -37,13 +44,18 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 exceptionColor = finalColor = 'red'
             }
 
+            var durationText = timeText(totalSyncDuration)
+            if(totalSyncDuration+10 < totalDuration) {
+                durationText += " "+color('grey', "("+timeText(totalDuration)+" including asynchronous parts)")
+            }
+
             if(nestingLevel == 0) {
                 var resultsLine = color('cyan', name+' - ')+
                                     color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful groups. ')+
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
-                        +" Took "+duration+"ms."
+                        +" Took "+durationText+"."
 
                 var result = ''
                 if(name) result += color('cyan', name)+'\n'
@@ -53,10 +65,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
-                                +" took "+duration+"ms"
-                if(totalDuration/duration > 2) {
-                    result += " "+color('grey', "("+totalDuration+"ms including setup and teardown)")
-                }
+                                +" took "+durationText
                 result += addResults()
             }
 

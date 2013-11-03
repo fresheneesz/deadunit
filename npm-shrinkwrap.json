@@ -1,0 +1,68 @@
+{
+  "name": "deadunit",
+  "version": "1.0.4",
+  "dependencies": {
+    "colors": {
+      "version": "0.6.2",
+      "from": "colors@"
+    },
+    "deadunit-core": {
+      "version": "1.1.0",
+      "from": "deadunit-core@1.1.0",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-1.1.0.tgz",
+      "dependencies": {
+        "stack-trace": {
+          "version": "0.0.7",
+          "from": "stack-trace@"
+        }
+      }
+    },
+    "proto": {
+      "version": "1.0.4",
+      "from": "proto@",
+      "dependencies": {
+        "buildModules": {
+          "version": "1.0.0",
+          "from": "buildModules@git+https://git@github.com/fresheneesz/buildModules.git#2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3",
+          "resolved": "git+https://git@github.com/fresheneesz/buildModules.git#2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3",
+          "dependencies": {
+            "uglify-js": {
+              "version": "2.4.0",
+              "from": "uglify-js@~2.4.0",
+              "dependencies": {
+                "async": {
+                  "version": "0.2.9",
+                  "from": "async@~0.2.6"
+                },
+                "source-map": {
+                  "version": "0.1.29",
+                  "from": "source-map@~0.1.7",
+                  "dependencies": {
+                    "amdefine": {
+                      "version": "0.0.8",
+                      "from": "amdefine@>=0.0.4"
+                    }
+                  }
+                },
+                "optimist": {
+                  "version": "0.3.7",
+                  "from": "optimist@~0.3.5",
+                  "dependencies": {
+                    "wordwrap": {
+                      "version": "0.0.2",
+                      "from": "wordwrap@~0.0.2"
+                    }
+                  }
+                },
+                "uglify-to-browserify": {
+                  "version": "1.0.1",
+                  "from": "uglify-to-browserify@~1.0.0"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

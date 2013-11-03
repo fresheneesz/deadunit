@@ -52,7 +52,7 @@ function formatGroup(test, format, nestingLevel) {
 
     exceptions+= test.exceptions.length
 
-    var formattedGroup = format.group(test.name, test.testDuration, test.totalDuration,
+    var formattedGroup = format.group(test.name, test.totalSyncDuration, test.duration,
                                       testCaseSuccesses, testCaseFailures,
                                       assertSuccesses, assertFailures, exceptions,
                                       results, exceptionResults, nestingLevel)

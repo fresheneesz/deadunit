@@ -162,14 +162,15 @@ Future.all(futuresToWaitOn).then(function() {
             })
 
             this.test("test groups", function(t) {
-                this.count(19)
+                this.count(4)
                 formatBasic(testGroups, {
                     group: function(name, duration, totalDuration, testSuccesses, testFailures,
                                           assertSuccesses, assertFailures, exceptions,
                                           testResults, exceptionResults, nestingLevel) {
 
                         if(name === "Testing the Unit Tester") {
-                            t.test("Test Some Stuff", function(t) {
+                            t.test("Testing the Unit Tester", function(t) {
+                                this.count(9)
                                 t.ok(testSuccesses === 2, testSuccesses)
                                 t.ok(testFailures === 1, testFailures)
                                 t.ok(testResults.length === 3, testResults.length)
@@ -178,10 +179,14 @@ Future.all(futuresToWaitOn).then(function() {
                                 t.ok(assertSuccesses === 6)
                                 t.ok(assertFailures === 3)
                                 t.ok(exceptions === 2)
+
+                                t.ok(duration !== undefined)
+                                t.ok(totalDuration !== undefined)
                             })
 
                         } else if(name === "Test Some Stuff") {
                             t.test("Test Some Stuff", function(t) {
+                                this.count(4)
                                 t.ok(testSuccesses === 2, testSuccesses)
                                 t.ok(testFailures === 3, testFailures)
                                 t.ok(testResults.length === 5, testResults.length)
@@ -190,6 +195,7 @@ Future.all(futuresToWaitOn).then(function() {
 
                         } else if(name === "assertSomething") {
                             t.test("assertSomething", function(t) {
+                                this.count(4)
                                 t.ok(testSuccesses === 1, testSuccesses)
                                 t.ok(testFailures === 0, testFailures)
                                 t.ok(testResults.length === 1, testResults.length)
@@ -198,6 +204,7 @@ Future.all(futuresToWaitOn).then(function() {
 
                         } else if(name === "shouldFail") {
                             t.test("shouldFail", function(t) {
+                                this.count(4)
                                 t.ok(testSuccesses === 0, testSuccesses)
                                 t.ok(testFailures === 3, testFailures)
                                 t.ok(testResults.length === 4, testResults.length)
