@@ -52,6 +52,26 @@ var testGroups = Unit.test("Testing the Unit Tester", function() {
             this.ok(x === Infinity, x)
         })
     })
+
+    this.test("logs", function() {
+
+        var array = [1,'a',{a:'b', b:[1,2]}]
+        var object = {some: 'object'}
+        var error = Error('test')
+
+        this.log("string")
+        this.log(object)
+        this.log(array)
+        this.log(error)
+        this.log('')
+        this.log("string", object, array, error)
+
+        this.ok(false, "string")
+        this.ok(false, object)
+        this.ok(false, array)
+        this.ok(false, error)
+
+    })
 })
 
 function stringTestResults(test) {
@@ -172,12 +192,12 @@ Future.all(futuresToWaitOn).then(function() {
                             t.test("Testing the Unit Tester", function(t) {
                                 this.count(9)
                                 t.ok(testSuccesses === 2, testSuccesses)
-                                t.ok(testFailures === 1, testFailures)
-                                t.ok(testResults.length === 3, testResults.length)
+                                t.ok(testFailures === 2, testFailures)
+                                t.ok(testResults.length === 4, testResults.length)
                                 t.ok(exceptionResults.length === 0, exceptionResults.length)
 
                                 t.ok(assertSuccesses === 6)
-                                t.ok(assertFailures === 3)
+                                t.ok(assertFailures === 7, assertFailures)
                                 t.ok(exceptions === 2)
 
                                 t.ok(duration !== undefined)
@@ -222,6 +242,8 @@ Future.all(futuresToWaitOn).then(function() {
                         } else if(name === "one") {
 
                         } else if(name === "yay") {
+
+                        } else if(name === "logs") {
 
                         } else {
                             t.ok(false, name)

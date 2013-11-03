@@ -14,6 +14,7 @@ Why use it over...
 The only competitive alternative I know is [Wizek's Tree](https://github.com/Wizek/Tree). 
 
 * deadunit is simple, doesn't provide needless sugar (e.g. always-pass/always-fail asserts) or an awkward sentence-like api
+* deadunit prints the lines of code of asserts in the test results!
 * deadunit doesn't proscribe synchronization for you - it only expects that you make sure your tests finish before you access the resutls.
 
 Then again, tree is designed to work in browsers, whereas deadunit doesn't yet do that.
@@ -65,9 +66,9 @@ var Unit = require('deadunit')
 * `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
     * `format.assert(result, testName)`
     * `format.exception(exception)`
-    * `format.group(testName, testDuration, totalDuration, testCaseSuccesses, testCaseFailures, assertSuccesses,`  
-`assertFailures, exceptions, results, exceptionResults, nestingLevel)`
-    * `format.log(message)`
+    * `format.group(name, totalDuration, totalSynchronousDuration, testCaseSuccesses, testCaseFailures,`  
+       `assertSuccesses, assertFailures, exceptions, results, exceptionResults, nestingLevel)`
+    * `format.log(values)`
 
 For documentation on how to write unit tests, see [deadunit-core](https://github.com/fresheneesz/deadunitCore).
 
@@ -117,6 +118,12 @@ How to submit pull requests:
 7. When you're done, run the unit tests and ensure they all pass
 8. Commit and push your changes
 9. Submit a pull request: https://help.github.com/articles/creating-a-pull-request
+
+Change Log
+=========
+
+* 1.0.6
+  * Pretty printing logs other places objects are printed
 
 License
 =======

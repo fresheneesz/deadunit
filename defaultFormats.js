@@ -1,3 +1,5 @@
+var util = require("util")
+
 var formatBasic = require("./basicFormatter")
 var indent = require("./indent")
 
@@ -73,7 +75,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
         },
         assert: function(result, test) {
             if(result.success) {
-                var word = "Success:";
+                var word = "Ok!";
                 var c = 'green'
             } else {
                 var word = "Fail:   ";
@@ -89,9 +91,9 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
                 var things = []
                 if(result.expected !== undefined)
-                    things.push("Expected "+result.expected)
+                    things.push("Expected "+valueToString(result.expected))
                 if(result.actual !== undefined)
-                    things.push("Got "+result.actual)
+                    things.push("Got "+valueToString(result.actual))
 
                 expectations = " - "+things.join(', ')
             }
@@ -110,10 +112,26 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             return color('red', 'Exception: ')
                         +color('magenta', displayError)
         },
-        log: function(msg) {
-            return msg
+        log: function(values) {
+            return values.map(function(v) {
+                if(v instanceof Error) {
+                    return v.stack
+                } else if(typeof(v) === 'string') {
+                    return v
+                } else {
+                    return util.inspect(v)
+                }
+            }).join('')
         }
     })
+}
+
+function valueToString(value) {
+    if(value instanceof Error) {
+        return value.stack
+    } else {
+        return util.inspect(value)
+    }
 }
 
 exports.html = function() {

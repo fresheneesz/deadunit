@@ -1,19 +1,20 @@
 {
   "name": "deadunit",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "dependencies": {
     "colors": {
       "version": "0.6.2",
       "from": "colors@"
     },
     "deadunit-core": {
-      "version": "1.1.0",
-      "from": "deadunit-core@1.1.0",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-1.1.0.tgz",
+      "version": "1.1.2",
+      "from": "deadunit-core@1.1.2",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-1.1.2.tgz",
       "dependencies": {
         "stack-trace": {
           "version": "0.0.7",
-          "from": "stack-trace@"
+          "from": "stack-trace@0.0.7",
+          "resolved": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.7.tgz"
         }
       }
     },
