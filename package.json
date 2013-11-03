@@ -1,10 +1,10 @@
 {"name":"deadunit",
  "description": "A dead-simple nestable unit testing library for javascript and node.js.",
  "keywords": ["unit", "test", "testing", "javascript", "node"],
- "version":"1.0.4",
+ "version":"1.0.5",
  "dependencies":{
      "colors":"",
-     "deadunit-core":"1.1.0",
+     "deadunit-core":"1.1.1",
      "proto":""
  },
  "devDependencies": {
