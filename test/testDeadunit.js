@@ -1,5 +1,7 @@
 "use strict";
 
+var fs = require("fs")
+
 var Unit = require('../deadunit')
 var indent = require("../indent")
 var Future = require('async-future')
@@ -123,30 +125,36 @@ Future.all(futuresToWaitOn).then(function() {
         }, 0)
     })
 
-    console.log("simple success")
-    simpleSuccess.writeConsole()
-
-    console.log("\nsimple failure")
-    simpleFailure.writeConsole()
-
-    console.log("\nsimple exception")
-    simpleException.writeConsole()
-
-    console.log("\nsimple exception without stack trace")
-    simpleExceptionNoTrace.writeConsole()
-
-    console.log(testGroups.toString())	// returns plain text
-    testGroups.writeConsole() 		// writes color console output
-
-    //console.log(testGroups.html())		// returns html
-    //testGroups.write.html()			// appends html to the current (html) page the tests are running in
-
-
-
 
     simpleAsyncExceptionFuture.then(function() {
+
+        console.log("simple success")
+        simpleSuccess.writeConsole()
+        fs.writeFileSync("simpleSuccess.html", simpleSuccess.html())
+
+        console.log("\nsimple failure")
+        simpleFailure.writeConsole()
+        fs.writeFileSync("simpleFailure.html", simpleFailure.html())
+
+        console.log("\nsimple exception")
+        simpleException.writeConsole()
+        fs.writeFileSync("simpleException.html", simpleException.html())
+
+        console.log("\nsimple exception without stack trace")
+        simpleExceptionNoTrace.writeConsole()
+        fs.writeFileSync("simpleExceptionNoTrace.html", simpleExceptionNoTrace.html())
+
+
         console.log("\nsimple async exception")
         simpleAsyncException.writeConsole()
+        fs.writeFileSync("simpleAsyncException.html", simpleAsyncException.html())
+
+
+        console.log(testGroups.toString())	// returns plain text
+        testGroups.writeConsole() 		// writes color console output
+        fs.writeFileSync("testGroups.html", testGroups.html())
+
+        //testGroups.write.html()			// appends html to the current (html) page the tests are running in
 
 
 		var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
@@ -265,9 +273,9 @@ Future.all(futuresToWaitOn).then(function() {
         console.log("")
         realTest.writeConsole()
 
+    }).catch(function(e) {
+        console.log(e.stack)
     }).done()
+}).catch(function(e) {
+    console.log(e.stack)
 }).done()
-
-
-
-

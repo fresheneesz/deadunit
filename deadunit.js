@@ -20,7 +20,9 @@ exports.test = proto(deadunitCore.test, function() {
         console.log(defaultFormats.text(this, true))
     }
 
-    this.html = defaultFormats.html
+    this.html = function() {
+        return defaultFormats.html(this)
+    }
 
 })
 

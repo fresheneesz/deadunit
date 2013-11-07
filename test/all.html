@@ -1,0 +1,49 @@
+<style>
+    body {
+        margin: 0px;
+        background: rgb(20,20,20);
+        color: white;
+    }
+    iframe {
+        width: 100%;
+        overflow: hidden;
+        border:  none;
+    }
+
+    iframe.short {
+        height:100px;
+    }
+    iframe.simpleAsyncException {
+        height:150px;
+    }
+    iframe.simpleException {
+        height:300px;
+    }
+
+    iframe.long {
+        height: 1800px;
+    }
+    .title {
+        margin-left: 8px;
+    }
+
+</style>
+
+<div>
+    <div class="title">Simple Success</div>
+    <iframe class="short" src="simpleSuccess.html"></iframe>
+
+    <div class="title">Simple Failure</div>
+    <iframe class="short" src="simpleFailure.html"></iframe>
+
+    <div class="title">Simple Exception</div>
+    <iframe class="simpleException" src="simpleException.html"></iframe>
+
+    <div class="title">Simple Exception Without a Stacktrace</div>
+    <iframe class="short" src="simpleExceptionNoTrace.html"></iframe>
+    
+    <div class="title">Simple Asynchronous Exception</div>
+    <iframe class="simpleAsyncException" src="simpleAsyncException.html"></iframe>
+    
+    <iframe class="long" src="testGroups.html"></iframe>
+</div>
