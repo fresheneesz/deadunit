@@ -147,7 +147,7 @@ How to submit pull requests:
 Change Log
 =========
 
-* 1.0.6
+* 1.0.7
   * Pretty printing logs other places objects are printed
   * html output
 
