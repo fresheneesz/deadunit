@@ -3,7 +3,7 @@
 `deadunit`
 ========
 
-A dead-simple nesting unit testing module for node.js (and someday the browser!). 
+A *dead*-simple nesting unit testing module for node.js (and someday the browser!).
 This repository provides default visual representations for the output of [deadunit-core](https://github.com/fresheneesz/deadunitCore),
   as well as a formatter that can be used to easily create custom test visualizations.
 
@@ -12,14 +12,19 @@ This repository provides default visual representations for the output of [deadu
 Why use it over...
 ==================
 
-The only competitive alternative I know is [Wizek's Tree](https://github.com/Wizek/Tree).
+* [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https://github.com/caolan/nodeunit) / [Wizek's Tree](https://github.com/Wizek/Tree)
+ * deadunit's *dead*-simple API only has two major ways to assert behavior (`ok` and `count`) making it easy to learn.
+ * deadunit prints the lines of code of asserts in the test results!
+ * deadunit just uses javascript! It doesn't have an awkward sentence-like api.
+ * deadunit's `count` method elegantly solves various issues like expecting exceptions and asynchronous asserts - just `count` up the number of `ok`s!
+ * deadunit follows best practices for modular design rather than creating global variables and functions
+ * deadunit doesn't provide spies. The use of spies is bad practice as tests should treat the modules they test as black boxes by only testing the public API. The internals of these APIs should be left alone.
+ * deadunit is simpler to use because it doesn't provide needless sugar (e.g. Tree's always-pass/always-fail asserts)
+ * deadunit doesn't proscribe synchronization for you - it only expects that you tell it when all the tests are complete (using `this.done()`).
+ * deadunit supports testing code that uses [node fibers](https://github.com/laverdet/node-fibers)
+ * deadunit's output is easier to visually parse than jasmine, or wizek's tree, and much easier than node-unit
 
-* deadunit is simple, doesn't provide needless sugar (e.g. always-pass/always-fail asserts) or an awkward sentence-like api
-* deadunit prints the lines of code of asserts in the test results!
-* deadunit doesn't proscribe synchronization for you - it only expects that you make sure your tests finish before you access the resutls.
-* deadunit supports testing code that uses [node fibers](https://github.com/laverdet/node-fibers)
-
-Then again, tree is designed to work in browsers, whereas deadunit doesn't yet do that.
+Deadunit doesn't work in the browser yet tho, whereas Jasmine and Tree do.
 
 Example
 =======
@@ -119,8 +124,9 @@ Passing tests are closed and failling tests are open by default. Clicking on the
 Todo
 ====
 
+* Print out own-properties of exceptions that happen
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
-* Maybe make it output dots for each assert when displaying in a console.
+* Output test results as they happen, and display a summary at the end (so you can see what progress the test is making).
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
 How to Contribute!
@@ -150,6 +156,7 @@ Change Log
 * 1.0.7
   * Pretty printing logs other places objects are printed
   * html output
+  * handling properties on exceptions
 
 License
 =======

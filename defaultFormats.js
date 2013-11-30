@@ -101,19 +101,13 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                         +expectations
         },
         exception: function(e) {
-            if(e.stack !== undefined) {
-                var displayError = e.stack
-            } else {
-                var displayError = e
-            }
-
             return color('red', 'Exception: ')
-                        +color('magenta', displayError)
+                        +color('magenta', valueToString(e))
         },
         log: function(values) {
             return values.map(function(v) {
                 return valueToString(v)
-            }).join('')
+            }).join(', ')
         }
     })
 }
@@ -128,7 +122,18 @@ function valueToMessage(value) {
 
 function valueToString(v) {
     if(v instanceof Error) {
-        return v.stack
+        var otherProperties = []
+        for(var n in v) {
+            if(Object.hasOwnProperty.call(v, n) && n !== 'message') {
+                otherProperties.push(valueToString(v[n]))
+            }
+        }
+
+        if(otherProperties.length > 0)
+            return v.stack +'\n'+otherProperties.join("\n")
+        else
+            return v.stack
+
     } else if(typeof(v) === 'string') {
         return v
     } else {

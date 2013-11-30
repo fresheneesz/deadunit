@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "dependencies": {
     "colors": {
       "version": "0.6.2",
@@ -19,28 +19,29 @@
       }
     },
     "proto": {
-      "version": "1.0.4",
+      "version": "1.0.6",
       "from": "proto@",
       "dependencies": {
         "buildModules": {
           "version": "1.0.0",
-          "from": "buildModules@git+https://git@github.com/fresheneesz/buildModules.git#2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3",
-          "resolved": "git+https://git@github.com/fresheneesz/buildModules.git#2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3",
+          "from": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
+          "resolved": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
           "dependencies": {
             "uglify-js": {
-              "version": "2.4.0",
+              "version": "2.4.6",
               "from": "uglify-js@~2.4.0",
+              "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.6.tgz",
               "dependencies": {
                 "async": {
                   "version": "0.2.9",
                   "from": "async@~0.2.6"
                 },
                 "source-map": {
-                  "version": "0.1.29",
+                  "version": "0.1.31",
                   "from": "source-map@~0.1.7",
                   "dependencies": {
                     "amdefine": {
-                      "version": "0.0.8",
+                      "version": "0.1.0",
                       "from": "amdefine@>=0.0.4"
                     }
                   }

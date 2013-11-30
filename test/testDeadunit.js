@@ -5,8 +5,20 @@ var fs = require("fs")
 var Unit = require('../deadunit')
 var indent = require("../indent")
 var Future = require('async-future')
+var proto = require('proto')
 
 var futuresToWaitOn = []
+
+var CustomError = proto(Error, function(superclass) {
+    this.name = 'CustomError'
+
+    this.init = function(msg, properties) {
+        superclass.call(this, msg)
+        for(var n in properties) {
+            this[n] = properties[n]
+        }
+    }
+})
 
 var testGroups = Unit.test("Testing the Unit Tester", function() {
 
@@ -60,18 +72,21 @@ var testGroups = Unit.test("Testing the Unit Tester", function() {
         var array = [1,'a',{a:'b', b:[1,2]}]
         var object = {some: 'object'}
         var error = Error('test')
+        var customError = CustomError('testCustom', {a:1, b:'two', c:[1,2,3], d:{four:4}})
 
         this.log("string")
         this.log(object)
         this.log(array)
         this.log(error)
+        this.log(customError)
         this.log('')
-        this.log("string", object, array, error)
+        this.log("string", object, array, error, customError)
 
         this.ok(false, "string")
         this.ok(false, object)
         this.ok(false, array)
         this.ok(false, error)
+        this.ok(false, customError)
 
     })
 })
@@ -189,7 +204,7 @@ Future.all(futuresToWaitOn).then(function() {
                 })
             })
 
-            this.test("test groups", function(t) {
+            this.test("formatBasic", function(t) {
                 this.count(4)
                 formatBasic(testGroups, {
                     group: function(name, duration, totalDuration, testSuccesses, testFailures,
@@ -205,7 +220,7 @@ Future.all(futuresToWaitOn).then(function() {
                                 t.ok(exceptionResults.length === 0, exceptionResults.length)
 
                                 t.ok(assertSuccesses === 6)
-                                t.ok(assertFailures === 7, assertFailures)
+                                t.ok(assertFailures === 8, assertFailures)
                                 t.ok(exceptions === 2)
 
                                 t.ok(duration !== undefined)
@@ -214,7 +229,6 @@ Future.all(futuresToWaitOn).then(function() {
 
                         } else if(name === "Test Some Stuff") {
                             t.test("Test Some Stuff", function(t) {
-                                this.count(4)
                                 t.ok(testSuccesses === 2, testSuccesses)
                                 t.ok(testFailures === 3, testFailures)
                                 t.ok(testResults.length === 5, testResults.length)
@@ -223,7 +237,6 @@ Future.all(futuresToWaitOn).then(function() {
 
                         } else if(name === "assertSomething") {
                             t.test("assertSomething", function(t) {
-                                this.count(4)
                                 t.ok(testSuccesses === 1, testSuccesses)
                                 t.ok(testFailures === 0, testFailures)
                                 t.ok(testResults.length === 1, testResults.length)
@@ -232,7 +245,6 @@ Future.all(futuresToWaitOn).then(function() {
 
                         } else if(name === "shouldFail") {
                             t.test("shouldFail", function(t) {
-                                this.count(4)
                                 t.ok(testSuccesses === 0, testSuccesses)
                                 t.ok(testFailures === 3, testFailures)
                                 t.ok(testResults.length === 4, testResults.length)
@@ -258,14 +270,44 @@ Future.all(futuresToWaitOn).then(function() {
                         }
                     },
                     assert: function(result, test) {
-                        //t.ok(false)
+                        return result
                     },
                     exception: function(e) {
-                        //t.ok(e.message === 'sync')
+                        return e
                     },
                     log: function(msg) {
-                        //t.ok(false)
+                        return msg
                     }
+                })
+            })
+
+            this.test("default formats", function() {
+                this.test('string exceptions', function() {
+
+                    var test = Unit.test("Testing the Unit Tester", function() {
+                        throw "strings aren't exceptions yo"
+                    })
+
+                    var resultOutput = test.string()
+                    this.log(resultOutput)
+
+                    this.ok(resultOutput.indexOf("strings aren't exceptions yo") !== -1)
+                    this.ok(resultOutput.indexOf("t\n") === -1) // this tests for the case where a string is printed one character per line (which is not desirable)
+                })
+
+                this.test('logging exceptions with custom properties', function() {
+
+                    var test = Unit.test("Testing the Unit Tester", function() {
+                        var customError = CustomError('testCustom', {a:1, b:'two', c:[1,2,3], d:{four:4}})
+                        this.log(customError)
+                    })
+
+                    var resultOutput = test.string()
+                    this.log(resultOutput)
+
+                    this.ok(resultOutput.indexOf("testCustom") !== -1)
+                    this.ok(resultOutput.indexOf("two") !== -1)
+                    this.ok(resultOutput.indexOf("four") !== -1)
                 })
             })
         })
