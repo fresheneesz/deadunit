@@ -1,19 +1,42 @@
 
-// built in test formatting helper
-module.exports = function(unitTest, format) {
-    //group, assert, exception
+var Future = require('async-future')
 
-    return formatGroup(unitTest.results(), format, 0).result;
+// built in test formatting helper
+module.exports = function(unitTest, printOnTheFly, format) {
+    var result = new Future
+
+    var events = {
+        end: function(e) {
+            result.return(formatGroup(unitTest.results(), format, 0).result)
+        }
+    }
+
+    if(printOnTheFly) {
+        events.assert = function(e) {
+            console.log(format.assert(e))
+        }
+        events.exception = function(e) {
+            console.log(format.exception(e.error))
+        }
+        events.log = function(e) {
+            console.log(format.log(e.values))
+        }
+    }
+
+    unitTest.events(events)
+
+    return result
 }
 
-function formatGroup(test, format, nestingLevel) {
+function formatGroup(testResults, format, nestingLevel) {
     var assertSuccesses = 0
     var assertFailures = 0
     var exceptions = 0
 
-	var testCaseSuccesses= 0, testCaseFailures=0;
+    var testCaseSuccesses= 0, testCaseFailures=0;
+
     var results = []
-    test.results.forEach(function(result) {
+    testResults.results.forEach(function(result) {
         if(result.type === 'assert') {
             if(result.success) {
                 testCaseSuccesses++
@@ -23,7 +46,7 @@ function formatGroup(test, format, nestingLevel) {
                 assertFailures++
             }
 
-            results.push(format.assert(result, test.name))
+            results.push(format.assert(result, testResults.name))
 
         } else if(result.type === 'group') {
             var group = formatGroup(result, format, nestingLevel+1)
@@ -46,13 +69,13 @@ function formatGroup(test, format, nestingLevel) {
     })
 
     var exceptionResults = []
-    test.exceptions.forEach(function(e) {
+    testResults.exceptions.forEach(function(e) {
         exceptionResults.push(format.exception(e))
     })
 
-    exceptions+= test.exceptions.length
+    exceptions+= testResults.exceptions.length
 
-    var formattedGroup = format.group(test.name, test.totalSyncDuration, test.duration,
+    var formattedGroup = format.group(testResults.name, testResults.totalSyncDuration, testResults.duration,
                                       testCaseSuccesses, testCaseFailures,
                                       assertSuccesses, assertFailures, exceptions,
                                       results, exceptionResults, nestingLevel)
@@ -64,3 +87,4 @@ function formatGroup(test, format, nestingLevel) {
             exceptions: exceptions
     }
 }
+

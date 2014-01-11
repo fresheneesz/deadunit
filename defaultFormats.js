@@ -1,9 +1,15 @@
 var util = require("util")
 
+var Future = require('async-future')
+
 var formatBasic = require("./basicFormatter")
 var indent = require("./indent")
 
-exports.text = function textOutput(unitTest, consoleColoring) {
+// unitTest is a deadunit-core UnitTest object
+// if consoleColoring is true, the string will contain console color annotations
+// if printOnTheFly is true, test results will be printed to the screen in addition to being returned
+// returns a future containing a string with the final results
+exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly) {
     if(consoleColoring) require('colors')
 
     function color(theColor, theString) {
@@ -13,7 +19,7 @@ exports.text = function textOutput(unitTest, consoleColoring) {
             return theString.toString()
     }
 
-    return formatBasic(unitTest, {
+    return formatBasic(unitTest, printOnTheFly, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel) {
@@ -80,8 +86,8 @@ exports.text = function textOutput(unitTest, consoleColoring) {
                 var c = 'red'
             }
 
-            var linesDisplay = result.sourceLines.join("\n")
-            if(result.sourceLines.length > 1) {
+            var linesDisplay = result.sourceLines
+            if(result.sourceLines.indexOf("\n") !== -1) {
                 linesDisplay = "\n"+linesDisplay;
             }
 
@@ -173,7 +179,146 @@ exports.html = function(unitTest) {
     var blue = 'rgb(0, 158, 173)'
     var brightBlue = 'rgb(0, 233, 255)'
     var gray = 'rgb(185, 180, 180)'
-    return '<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>'+
+
+
+    var formattedTestHtml = formatBasic(unitTest, false, {
+        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
+                          assertSuccesses, assertFailures, exceptions,
+                          testResults, exceptionResults, nestingLevel) {
+
+            var total = testSuccesses+testFailures
+            var mainId = getMainId(name)
+
+            if(testFailures > 0 || exceptions > 0) {
+                var bgcolor=red;
+                var show = "true";
+                var foregroundColor = lightRed
+            } else {
+                var bgcolor=green;
+                var show = "false";
+                var foregroundColor = brightGreen
+            }
+
+            var durationText = timeText(totalSyncDuration)
+            if(totalSyncDuration+10 < totalDuration) {
+                durationText += ' <span class="asyncTime">'+"("+timeText(totalDuration)+" including asynchronous parts)</span>"
+            }
+
+            if(nestingLevel === 0) {
+
+                var initTestGroup = function(mainId, bgcolor, show) {
+                    $(function()
+                    {	$('#'+mainId).css({"border-color":"'+bgcolor+'"});
+                        TestDisplayer.onToggle(show, bgcolor, '#'+mainId);
+
+                        $('#'+mainId+'_final').click(function()
+                        {	TestDisplayer.onToggle($('#'+mainId).css("display") == "none", bgcolor, '#'+mainId);
+                        });
+                    });
+                }
+
+                var nameLine = "", titleLine = ''
+                if(name) {
+                    titleLine = '<h1 class="primaryTitle">'+name+'</h1>'
+                    nameLine = name+' - '
+                }
+
+                return titleLine+
+                       '<div class="testResultsArea" id="'+mainId+'">'+
+                            testResults.join('\n')+
+                            exceptionResults.join('\n')+"\n"+
+                       '</div>'+
+                       '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
+                            '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
+                                '<div style="float:right;"><i>click on this bar</i></div>'+
+                                '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful test groups. '+
+                                '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
+                                ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
+                                ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+
+                                '. <span style="color: '+white+'">Took '+durationText+".</span>"+
+                            '</div>'+
+                       '</div>'+
+
+                       '<script>;('+initTestGroup+')("'+mainId+'", "'+bgcolor+'", '+show+')</script>'+
+                       '</div>'
+
+            } else {
+                var n = getNewNumber()
+
+                var testId = mainId+n
+
+                var initTest = function(mainId, bgcolor, show, n) {
+                    $(function()
+                    {	$('#'+mainId).css({borderColor:bgcolor});
+                        TestDisplayer.onToggle(show, bgcolor, '#'+mainId+n+'_inner', '#'+mainId+n);
+
+                        $('.'+mainId+n+'_status').click(function()
+                        {	TestDisplayer.onToggle
+                            (	$('#'+mainId+n+'_inner').css("display") == "none",
+                                bgcolor,
+                                '#'+mainId+n+'_inner',
+                                '#'+mainId+n+''
+                            );
+                        });
+                    });
+                }
+
+                return '<div class="resultsArea" id="'+mainId+n+'">'+
+                            '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+
+                                name+': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
+                                testSuccesses+'/'+total+" and "+exceptions+" exception"+plural(exceptions)
+                                +' <span style="color: white">took '+durationText+'</span>'+
+                            '</div>'+
+                            '<div class="resultsAreaInner" id="'+testId+'_inner">'+
+                                '<h2 class="'+testId+'_status link" style="color:'+bgcolor+';">'+name+'</h2>'+
+                                testResults.join('\n')+"\n"+
+                                exceptionResults.join('\n')+"\n"+
+                            '</div>'+
+                            '<script>;('+initTest+')("'+mainId+'", "'+bgcolor+'", '+show+', '+n+')</script>'+
+                      '</div>';
+            }
+        },
+        assert: function(result) {
+            if(false === result.success) {
+                var color = red;
+                var word = "Fail:";
+            } else {
+                var color = green;
+                var word = "Ok!";
+            }
+
+            var linesDisplay = "<i>"+htmlEscape(result.sourceLines).replace(/\n/g, "<br>\n")+"</i>";
+            if(result.sourceLines.indexOf("\n") !== -1) {
+                linesDisplay = "<br>\n"+linesDisplay;
+            }
+
+            return '<div style="color:'+color+';"><span >'+word+'</span>'+
+                        " <span class='locationOuter'>[<span class='locationInner'>"
+                                +result.file+" line <span class='lineNumber'>"+result.line+"</span>:"
+                            +result.column+"</span>]"
+                        +"</span> "
+                    +linesDisplay+"</div>"
+        },
+        exception: function(exception) {
+            if(exception.stack !== undefined) {
+                var displayError = exception.stack
+            } else {
+                var displayError = exception
+            }
+
+            var formattedException = htmlEscape(displayError).replace(/ /g, '&nbsp;').replace(/\n/g, "<br>\n")
+            return '<span style="color:'+purple+';">Exception: '+formattedException+'</span>'
+        },
+        log: function(values) {
+            return values.map(function(v) {
+                return htmlEscape(valueToString(v)).replace("\n", "<br>\n")
+            }).join('<br>\n')
+
+        }
+    })
+
+    return formattedTestHtml.then(function(formattedHtml) {
+        return Future('<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>'+
         '<style>\
             body{\
                 background-color: '+black+';\
@@ -232,142 +377,9 @@ exports.html = function(unitTest) {
          </style>'+
         '<script type="text/javascript">                      \
              var TestDisplayer = ('+getTestDisplayer+')() \
-          </script>'+
-        formatBasic(unitTest, {
-            group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
-                              assertSuccesses, assertFailures, exceptions,
-                              testResults, exceptionResults, nestingLevel) {
-
-                var total = testSuccesses+testFailures
-                var mainId = getMainId(name)
-
-                if(testFailures > 0 || exceptions > 0) {
-                	var bgcolor=red;
-                    var show = "true";
-                    var foregroundColor = lightRed
-                } else {
-                    var bgcolor=green;
-                    var show = "false";
-                    var foregroundColor = brightGreen
-                }
-
-                var durationText = timeText(totalSyncDuration)
-                if(totalSyncDuration+10 < totalDuration) {
-                    durationText += ' <span class="asyncTime">'+"("+timeText(totalDuration)+" including asynchronous parts)</span>"
-                }
-
-                if(nestingLevel === 0) {
-
-                    var initTestGroup = function(mainId, bgcolor, show) {
-                        $(function()
-                        {	$('#'+mainId).css({"border-color":"'+bgcolor+'"});
-                            TestDisplayer.onToggle(show, bgcolor, '#'+mainId);
-
-                            $('#'+mainId+'_final').click(function()
-                            {	TestDisplayer.onToggle($('#'+mainId).css("display") == "none", bgcolor, '#'+mainId);
-                            });
-                        });
-                    }
-
-                    var nameLine = "", titleLine = ''
-                    if(name) {
-                        titleLine = '<h1 class="primaryTitle">'+name+'</h1>'
-                        nameLine = name+' - '
-                    }
-
-                    return titleLine+
-                           '<div class="testResultsArea" id="'+mainId+'">'+
-                                testResults.join('\n')+
-                                exceptionResults.join('\n')+"\n"+
-                           '</div>'+
-                           '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
-                                '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
-                                    '<div style="float:right;"><i>click on this bar</i></div>'+
-                                    '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful test groups. '+
-                                    '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
-                                    ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
-                                    ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+
-                                    '. <span style="color: '+white+'">Took '+durationText+".</span>"+
-                                '</div>'+
-                           '</div>'+
-
-                           '<script>;('+initTestGroup+')("'+mainId+'", "'+bgcolor+'", '+show+')</script>'+
-                           '</div>'
-
-                } else {
-                    var n = getNewNumber()
-
-                    var testId = mainId+n
-
-                    var initTest = function(mainId, bgcolor, show, n) {
-                        $(function()
-                        {	$('#'+mainId).css({borderColor:bgcolor});
-                            TestDisplayer.onToggle(show, bgcolor, '#'+mainId+n+'_inner', '#'+mainId+n);
-
-                            $('.'+mainId+n+'_status').click(function()
-                            {	TestDisplayer.onToggle
-                                (	$('#'+mainId+n+'_inner').css("display") == "none",
-                                    bgcolor,
-                                    '#'+mainId+n+'_inner',
-                                    '#'+mainId+n+''
-                                );
-                            });
-                        });
-                    }
-
-                    return '<div class="resultsArea" id="'+mainId+n+'">'+
-                                '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+
-                                    name+': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-                                    testSuccesses+'/'+total+" and "+exceptions+" exception"+plural(exceptions)
-                                    +' <span style="color: white">took '+durationText+'</span>'+
-                                '</div>'+
-                                '<div class="resultsAreaInner" id="'+testId+'_inner">'+
-                                    '<h2 class="'+testId+'_status link" style="color:'+bgcolor+';">'+name+'</h2>'+
-                                    testResults.join('\n')+"\n"+
-                                    exceptionResults.join('\n')+"\n"+
-                                '</div>'+
-                                '<script>;('+initTest+')("'+mainId+'", "'+bgcolor+'", '+show+', '+n+')</script>'+
-                          '</div>';
-                }
-            },
-            assert: function(result) {
-                if(false === result.success) {
-                    var color = red;
-                    var word = "Fail:";
-                } else {
-                    var color = green;
-                    var word = "Ok!";
-                }
-
-                var linesDisplay = "<i>"+htmlEscape(result.sourceLines.join("\n")).replace(/\n/g, "<br>\n")+"</i>";
-                if(result.sourceLines.length > 1) {
-                    linesDisplay = "<br>\n"+linesDisplay;
-                }
-
-                return '<div style="color:'+color+';"><span >'+word+'</span>'+
-                            " <span class='locationOuter'>[<span class='locationInner'>"
-                                    +result.file+" line <span class='lineNumber'>"+result.line+"</span>:"
-                                +result.column+"</span>]"
-                            +"</span> "
-                        +linesDisplay+"</div>"
-            },
-            exception: function(exception) {
-                if(exception.stack !== undefined) {
-                    var displayError = exception.stack
-                } else {
-                    var displayError = exception
-                }
-
-                var formattedException = htmlEscape(displayError).replace(/ /g, '&nbsp;').replace(/\n/g, "<br>\n")
-                return '<span style="color:'+purple+';">Exception: '+formattedException+'</span>'
-            },
-            log: function(values) {
-                return values.map(function(v) {
-                    return htmlEscape(valueToString(v)).replace("\n", "<br>\n")
-                }).join('<br>\n')
-
-            }
-        })
+          </script>'
+        +formattedHtml)
+    })
 }
 
 var nextId = 0

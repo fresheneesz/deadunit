@@ -14,14 +14,17 @@
         height:100px;
     }
     iframe.simpleAsyncException {
-        height:150px;
+        height:170px;
     }
     iframe.simpleException {
         height:300px;
     }
+    iframe.simpleTimeout {
+        height:100px;
+    }
 
     iframe.long {
-        height: 1800px;
+        height: 2500px;
     }
     .title {
         margin-left: 8px;
@@ -31,19 +34,22 @@
 
 <div>
     <div class="title">Simple Success</div>
-    <iframe class="short" src="simpleSuccess.html"></iframe>
+    <iframe class="short" src="generated/simpleSuccess.html"></iframe>
 
     <div class="title">Simple Failure</div>
-    <iframe class="short" src="simpleFailure.html"></iframe>
+    <iframe class="short" src="generated/simpleFailure.html"></iframe>
 
     <div class="title">Simple Exception</div>
-    <iframe class="simpleException" src="simpleException.html"></iframe>
+    <iframe class="simpleException" src="generated/simpleException.html"></iframe>
 
     <div class="title">Simple Exception Without a Stacktrace</div>
-    <iframe class="short" src="simpleExceptionNoTrace.html"></iframe>
+    <iframe class="short" src="generated/simpleExceptionNoTrace.html"></iframe>
     
     <div class="title">Simple Asynchronous Exception</div>
-    <iframe class="simpleAsyncException" src="simpleAsyncException.html"></iframe>
+    <iframe class="simpleAsyncException" src="generated/simpleAsyncException.html"></iframe>
+
+    <div class="title">Simple Timeout / count failure</div>
+    <iframe class="simpleTimeout" src="generated/simpleTimeout.html"></iframe>
     
-    <iframe class="long" src="testGroups.html"></iframe>
+    <iframe class="long" src="generated/testGroups.html"></iframe>
 </div>

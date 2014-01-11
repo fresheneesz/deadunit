@@ -33,13 +33,24 @@ Example
 var Unit = require('deadunit')
 
 var test = Unit.test('some test name', function() {
-    var obj = someFunctionToTest()
+    this.count(5) // expect all 5 `ok` assertions
 
+    var obj = someFunctionToTest()
     this.ok(obj.x === 5)
     this.ok(obj.y === 'y')
 
     this.test('nested test', function() {
         this.ok(obj.go() > 4)
+    })
+
+    try {
+    	doSomethingBad()
+    } catch(e) {
+    	this.ok(true) // expect an exception
+    }
+
+    doSomethingAsynchronous(function(result) {
+        this.ok(result === 'good')
     })
 })
 
@@ -70,6 +81,8 @@ var Unit = require('deadunit')
 
 `Unit.format(<unitTest>, <format>)` - creates custom formatted output for test results according to the passed in `<format>`.
 
+`Unit.string(<results>, <colorize>)` - returns a string containing formatted test results for the passed in. The format of the results is the format returned by [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)'s `results` method. *See below for screenshots.*
+
 * `<unitTest>` is a `UnitTest` (or `ExtendedUnitTest`) object
 * `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
     * `format.assert(result, testName)`
@@ -77,7 +90,7 @@ var Unit = require('deadunit')
         * `testName` is the name of the test the assert is under
     * `format.exception(exception)`
         * `exception` is an exception object (could be any object that was thrown)
-    * `format.group(name, totalDuration, totalSynchronousDuration, testCaseSuccesses, testCaseFailures,`  
+    * `format.group(name, totalDuration, totalSynchronousDuration, testCaseSuccesses, testCaseFailures,`
        `assertSuccesses, assertFailures, exceptions, results, exceptionResults, nestingLevel)`
        * `name` is the test group name
        * `totalDuration` - the total duration the test took from start to the last test-action
@@ -100,13 +113,13 @@ ExtendedUnitTest
 
 This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz/deadunitCore#unittest). Also has the following methods:
 
-`test.toString(<colorize>)` - returns a string containing formatted test results. *See below for screenshots.*
+`test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. *See below for screenshots.*
 
-`test.string(<colorize>)` - alias of `toString`
-
-`test.writeConsole()` - writes colorized text output to the console. *See below for screenshots.*
+`test.writeConsole()` - writes colorized text output to the console. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. *See below for screenshots.*
 
 `test.html()` - returns a string containing html-formatted test results. *See below for screenshots.*
+
+`test.results()` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
 
 ### Screenshots ###
 
@@ -121,12 +134,24 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 Passing tests are closed and failling tests are open by default. Clicking on the bars toggles sections open or closed.
 ![Full HTML test results](screenshots/FullTestHtml.png "Full HTML test results")
 
+Note about tests with asynchronous parts
+========================================
+
+Javascript (and node.js especially) has a lot of asynchronous parts.
+Deadunit allows your tests to run asychronously/concurrently, but you have to manage that concurrency.
+
+I recommend that you use either:
+
+* [`fibers/future`s](https://github.com/laverdet/node-fibers#futures),
+* or my own [async-futures](https://github.com/fresheneesz/asyncFuture)
+
 Todo
 ====
 
-* Print out own-properties of exceptions that happen
-* Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Output test results as they happen, and display a summary at the end (so you can see what progress the test is making).
+* add a note when the tests timeout
+* add a hanging-check for node.js that checks if the script is hanging after test.writeConsole ends.
+* Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
 How to Contribute!
@@ -153,6 +178,13 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.0 - *Breaking Change*
+  * incorporating changes in [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage) 2.0.0
+  * added `test.results`
+  * `test.writeConsole` and `test.html` only return when the test is done (or times out)
+  * `test.writeConsole` outputs test results as they happen in addition to outputting the final output
+  * removed `test.toString`
+  * `test.string` and `test.html` now return futures
 * 1.0.7
   * Pretty printing logs other places objects are printed
   * html output
