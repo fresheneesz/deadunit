@@ -115,7 +115,7 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 
 `test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. *See below for screenshots.*
 
-`test.writeConsole()` - writes colorized text output to the console. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. *See below for screenshots.*
+`test.writeConsole(<hangingTimeout>)` - writes colorized text output to the console. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. `<hangingTimeout>` is optional (default 100), and if non-zero, a warning will be displayed if the script doesn't exit before `<hangingTimeout>` number of milliseconds has passed. If zero, no warning happens.  *See below for screenshots.*
 
 `test.html()` - returns a string containing html-formatted test results. *See below for screenshots.*
 
@@ -148,9 +148,8 @@ I recommend that you use either:
 Todo
 ====
 
-* Output test results as they happen, and display a summary at the end (so you can see what progress the test is making).
-* add a note when the tests timeout
-* add a hanging-check for node.js that checks if the script is hanging after test.writeConsole ends.
+* add the ability to stream test results to a browser
+* make deadunit work on browsers (standalone)
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
@@ -178,6 +177,9 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.1
+  * added a note when a test times out
+  * added the ability to warn if the script is hanging after `test.writeConsole` prints out the test
 * 2.0.0 - *Breaking Change*
   * incorporating changes in [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage) 2.0.0
   * added `test.results`

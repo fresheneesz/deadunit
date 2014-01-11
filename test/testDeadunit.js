@@ -53,7 +53,7 @@ simpleSuccess = Unit.test(function() {
     this.ok(true)
 })
 
-simpleSuccess.writeConsole().then(function() {
+simpleSuccess.writeConsole(0).then(function() {
     return simpleSuccess.html()
 }).then(function(simpleSuccessHtml) {
     fs.writeFileSync(folder+"simpleSuccess.html", simpleSuccessHtml)
@@ -62,7 +62,7 @@ simpleSuccess.writeConsole().then(function() {
     simpleFailure = Unit.test(function() {
         this.ok(false)
     })
-    return simpleFailure.writeConsole()
+    return simpleFailure.writeConsole(0)
 }).then(function() {
     return simpleFailure.html()
 }).then(function(simpleFailureHtml) {
@@ -72,7 +72,7 @@ simpleSuccess.writeConsole().then(function() {
     simpleException = Unit.test(function() {
         throw Error("sync")
     })
-    return simpleException.writeConsole()
+    return simpleException.writeConsole(0)
 }).then(function() {
     return simpleException.html()
 }).then(function(simpleExceptionHtml) {
@@ -82,7 +82,7 @@ simpleSuccess.writeConsole().then(function() {
     simpleExceptionNoTrace = Unit.test(function() {
         throw "I think I'm an exception"
     })
-    return simpleExceptionNoTrace.writeConsole()
+    return simpleExceptionNoTrace.writeConsole(0)
 }).then(function() {
     return simpleExceptionNoTrace.html()
 }).then(function(simpleExceptionNoTraceHtml) {
@@ -101,7 +101,7 @@ simpleSuccess.writeConsole().then(function() {
 
     return simpleAsyncExceptionFuture
 }).then(function() {
-    return simpleAsyncException.writeConsole()
+    return simpleAsyncException.writeConsole(0)
 }).then(function() {
     return simpleAsyncException.html()
 }).then(function(simpleAsyncExceptionHtml) {
@@ -215,13 +215,12 @@ simpleSuccess.writeConsole().then(function() {
         var formatBasic = require("../basicFormatter")
 
         this.test("simple exception", function(t) {
-
             var simpleException2 = Unit.test(function() {
                 throw Error("sync")
             })
 
             this.count(10)
-            formatBasic(simpleException2, false, {
+            formatBasic(simpleException2, false, 0, {
                 group: function(name, duration, totalDuration, testSuccesses, testFailures,
                                       assertSuccesses, assertFailures, exceptions,
                                       testResults, exceptionResults, nestingLevel) {
@@ -250,7 +249,7 @@ simpleSuccess.writeConsole().then(function() {
 
         this.test("formatBasic", function(t) {
             this.count(4)
-            formatBasic(testGroups, false, {
+            formatBasic(testGroups, false, 0, {
                 group: function(name, duration, totalDuration, testSuccesses, testFailures,
                                       assertSuccesses, assertFailures, exceptions,
                                       testResults, exceptionResults, nestingLevel) {

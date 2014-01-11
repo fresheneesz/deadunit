@@ -9,7 +9,7 @@ var indent = require("./indent")
 // if consoleColoring is true, the string will contain console color annotations
 // if printOnTheFly is true, test results will be printed to the screen in addition to being returned
 // returns a future containing a string with the final results
-exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly) {
+exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, hangingTimeout) {
     if(consoleColoring) require('colors')
 
     function color(theColor, theString) {
@@ -19,10 +19,10 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly) {
             return theString.toString()
     }
 
-    return formatBasic(unitTest, printOnTheFly, {
+    return formatBasic(unitTest, printOnTheFly, hangingTimeout, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
-                              testResults, exceptionResults, nestingLevel) {
+                              testResults, exceptionResults, nestingLevel, timedOut) {
 
             var total = testSuccesses+testFailures
 
@@ -67,6 +67,10 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly) {
                 if(name) result += color('cyan', name)+'\n'
                 result += addResults()
                 result += '\n\n'+resultsLine
+
+                if(timedOut) {
+                    result += '\n    The test timed out'.red
+                }
             } else {
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
@@ -181,10 +185,10 @@ exports.html = function(unitTest) {
     var gray = 'rgb(185, 180, 180)'
 
 
-    var formattedTestHtml = formatBasic(unitTest, false, {
+    var formattedTestHtml = formatBasic(unitTest, false, 0, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
-                          testResults, exceptionResults, nestingLevel) {
+                          testResults, exceptionResults, nestingLevel, timedOut) {
 
             var total = testSuccesses+testFailures
             var mainId = getMainId(name)
@@ -223,10 +227,16 @@ exports.html = function(unitTest) {
                     nameLine = name+' - '
                 }
 
+                var timeoutNote = ""
+                if(timedOut) {
+                    timeoutNote = 'The test timed out'
+                }
+
                 return titleLine+
                        '<div class="testResultsArea" id="'+mainId+'">'+
                             testResults.join('\n')+
                             exceptionResults.join('\n')+"\n"+
+                            '<div style="color:'+red+'">'+timeoutNote+'</div>'+
                        '</div>'+
                        '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
                             '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+

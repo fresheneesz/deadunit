@@ -2,12 +2,19 @@
 var Future = require('async-future')
 
 // built in test formatting helper
-module.exports = function(unitTest, printOnTheFly, format) {
+module.exports = function(unitTest, printOnTheFly, hangingTimeout, format) {
     var result = new Future
 
     var events = {
         end: function(e) {
-            result.return(formatGroup(unitTest.results(), format, 0).result)
+            var results = unitTest.results()
+            result.return(formatGroup(results, format, 0).result)
+
+            if(hangingTimeout !== 0) {
+                setTimeout(function() {
+                    console.log(("Script is hanging (lasted more than "+hangingTimeout+"ms after test \""+results.name+"\" finished printing)").red)
+                }, hangingTimeout).unref() // note: unref is only available in node.js
+            }
         }
     }
 
@@ -78,7 +85,7 @@ function formatGroup(testResults, format, nestingLevel) {
     var formattedGroup = format.group(testResults.name, testResults.totalSyncDuration, testResults.duration,
                                       testCaseSuccesses, testCaseFailures,
                                       assertSuccesses, assertFailures, exceptions,
-                                      results, exceptionResults, nestingLevel)
+                                      results, exceptionResults, nestingLevel, testResults.timeout)
     return {result: formattedGroup,
             successes: testCaseSuccesses,
             failures: testCaseFailures,
