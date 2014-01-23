@@ -3,28 +3,27 @@
 `deadunit`
 ========
 
-A *dead*-simple nesting unit testing module for node.js (and someday the browser!).
+A *dead*-simple nesting unit testing module for node.js and in-browser!.
 This repository provides default visual representations for the output of [deadunit-core](https://github.com/fresheneesz/deadunitCore),
   as well as a formatter that can be used to easily create custom test visualizations.
 
-'*Now with both console and HTML output!*'
+'*Now with browser output!*'
 
-Why use it over...
+Why use it over [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https://github.com/caolan/nodeunit) / [Wizek's Tree](https://github.com/Wizek/Tree)
 ==================
 
-* [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https://github.com/caolan/nodeunit) / [Wizek's Tree](https://github.com/Wizek/Tree)
  * deadunit's *dead*-simple API only has two major ways to assert behavior (`ok` and `count`) making it easy to learn.
- * deadunit prints the lines of code of asserts in the test results!
+ * deadunit prints the lines of code of asserts in the test results! So your output makes sense even if you don't spend a lot of time writing test commentary.
  * deadunit just uses javascript! It doesn't have an awkward sentence-like api.
  * deadunit's `count` method elegantly solves various issues like expecting exceptions and asynchronous asserts - just `count` up the number of `ok`s!
  * deadunit follows best practices for modular design rather than creating global variables and functions
  * deadunit doesn't provide spies. The use of spies is bad practice as tests should treat the modules they test as black boxes by only testing the public API. The internals of these APIs should be left alone.
  * deadunit is simpler to use because it doesn't provide needless sugar (e.g. Tree's always-pass/always-fail asserts)
- * deadunit doesn't proscribe synchronization for you - it only expects that you tell it when all the tests are complete (using `this.done()`).
+ * deadunit doesn't proscribe synchronization for you - it only expects that you tell it how many `ok`s you expect (with `count`) when you have asynchronous assertions.
+ * it prints out exception *and* any attached data they have
+ * it'll let you know if your code is hanging (something you don't want, but usually goes unnoticed)
  * deadunit supports testing code that uses [node fibers](https://github.com/laverdet/node-fibers)
  * deadunit's output is easier to visually parse than jasmine, or wizek's tree, and much easier than node-unit
-
-Deadunit doesn't work in the browser yet tho, whereas Jasmine and Tree do.
 
 Example
 =======
@@ -79,11 +78,11 @@ var Unit = require('deadunit')
 
 `Unit.error(<handler>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
 
-`Unit.format(<unitTest>, <format>)` - creates custom formatted output for test results according to the passed in `<format>`.
-
-`Unit.string(<results>, <colorize>)` - returns a string containing formatted test results for the passed in. The format of the results is the format returned by [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)'s `results` method. *See below for screenshots.*
+`Unit.format(<unitTest>, <printOnTheFly>, <printLateEvents>, <format>)` - creates custom formatted output for test results according to the passed in `<format>`.
 
 * `<unitTest>` is a `UnitTest` (or `ExtendedUnitTest`) object
+* `<printOnTheFly>` - if true, events will be printed to the console as they come in
+* `<printLateEvents>` - (optional - default true) if true, a warning will be printed when events come in after the results have been written.
 * `<format>` - an object containing functions that format the various types of results. Each formater function should return a `String`.
     * `format.assert(result, testName)`
     	* `result` is a deadunit-core [assert result object](https://github.com/fresheneesz/deadunitCore#assert)
@@ -113,13 +112,16 @@ ExtendedUnitTest
 
 This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz/deadunitCore#unittest). Also has the following methods:
 
-`test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. *See below for screenshots.*
+`test.writeConsole(<hangingTimeout>)` - writes colorized text output to the console. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. `<hangingTimeout>` (optional - default 100) is the number of milliseconds to wait for the script to exit after the results have been written. If the script hasn't exited in that amount of time, a warning will be written. If zero, no warning happens. This only applies to node.js. *See below for screenshots.*
 
-`test.writeConsole(<hangingTimeout>)` - writes colorized text output to the console. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. `<hangingTimeout>` is optional (default 100), and if non-zero, a warning will be displayed if the script doesn't exit before `<hangingTimeout>` number of milliseconds has passed. If zero, no warning happens.  *See below for screenshots.*
+`test.writeHtml(<domElement>)` - writes test output to the dom element who's reference was passed to writeHtml. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. *See below for screenshots.*
 
-`test.html()` - returns a string containing html-formatted test results. *See below for screenshots.*
+`test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. `<colorize>` should only be set to true if it will be printed to a command-line console. *See below for screenshots.*
 
-`test.results()` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
+`test.html(<printLateEvents>)` - returns a string containing html-formatted test results. *See below for screenshots.*
+  * `<printLateEvents>` - (optional - default true) if true, a warning will be printed when events come in after the results have been written.
+
+`test.results(<printLateEvents>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage). When called from deadunit, doesn't print a warning for late events, use the `events` method if you need to detect that.
 
 ### Screenshots ###
 
@@ -145,12 +147,16 @@ I recommend that you use either:
 * [`fibers/future`s](https://github.com/laverdet/node-fibers#futures),
 * or my own [async-futures](https://github.com/fresheneesz/asyncFuture)
 
+On browsers, since there is nothing as nice as node.js Domains, the`window.onerror` handler is used. The `onerror` handler has [many limitations](http://blog.meldium.com/home/2013/9/30/so-youre-thinking-of-tracking-your-js-errors), one of which is that it doesn't currently return an exception object with a stacktrace. If you want to see a more detailed stacktrace for these kinds of errors, check your browser's console (ahem, if you have one - I'm looking at you older versions of IE) because deadunit will not be able to capture and display a stacktrace in its normal output. One goal for most any code is to have 0 unhandled asyncronous exceptions.
+
 Todo
 ====
 
+* change time display so it displays full time (with asynchronous parts) as the primary time
 * add the ability to stream test results to a browser
 * make deadunit work on browsers (standalone)
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
+* Ability to use a sourcemap file to correct line/column numbers
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
 How to Contribute!

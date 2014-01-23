@@ -9,7 +9,8 @@ var indent = require("./indent")
 // if consoleColoring is true, the string will contain console color annotations
 // if printOnTheFly is true, test results will be printed to the screen in addition to being returned
 // returns a future containing a string with the final results
-exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, hangingTimeout) {
+exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, printLateEvents) {
+    if(printLateEvents === undefined) printLateEvents = true
     if(consoleColoring) require('colors')
 
     function color(theColor, theString) {
@@ -19,7 +20,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, han
             return theString.toString()
     }
 
-    return formatBasic(unitTest, printOnTheFly, hangingTimeout, {
+    return formatBasic(unitTest, printOnTheFly, printLateEvents, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel, timedOut) {
@@ -151,7 +152,8 @@ function valueToString(v) {
     }
 }
 
-exports.html = function(unitTest) {
+exports.html = function(unitTest, printLateEvents) {
+    if(printLateEvents === undefined) printLateEvents = true
 
     var getTestDisplayer = function() {
         return {
@@ -185,7 +187,7 @@ exports.html = function(unitTest) {
     var gray = 'rgb(185, 180, 180)'
 
 
-    var formattedTestHtml = formatBasic(unitTest, false, 0, {
+    var formattedTestHtml = formatBasic(unitTest, false, 0, printLateEvents, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
                           testResults, exceptionResults, nestingLevel, timedOut) {
@@ -297,9 +299,20 @@ exports.html = function(unitTest) {
                 var word = "Ok!";
             }
 
-            var linesDisplay = "<i>"+htmlEscape(result.sourceLines).replace(/\n/g, "<br>\n")+"</i>";
+            var linesDisplay = "<i>"+textToHtml(result.sourceLines)+"</i>";
             if(result.sourceLines.indexOf("\n") !== -1) {
                 linesDisplay = "<br>\n"+linesDisplay;
+            }
+
+            var expectations = ""
+            if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
+                var things = []
+                if(result.expected !== undefined)
+                    things.push("Expected "+textToHtml(valueToMessage(result.expected)))
+                if(result.actual !== undefined)
+                    things.push("Got "+textToHtml(valueToMessage(result.actual)))
+
+                expectations = " - "+things.join(', ')
             }
 
             return '<div style="color:'+color+';"><span >'+word+'</span>'+
@@ -307,7 +320,9 @@ exports.html = function(unitTest) {
                                 +result.file+" line <span class='lineNumber'>"+result.line+"</span>:"
                             +result.column+"</span>]"
                         +"</span> "
-                    +linesDisplay+"</div>"
+                    +linesDisplay
+                    +' <span class="expectations">'+expectations+'</span>'
+            +"</div>"
         },
         exception: function(exception) {
             if(exception.stack !== undefined) {
@@ -316,13 +331,15 @@ exports.html = function(unitTest) {
                 var displayError = exception
             }
 
-            var formattedException = htmlEscape(displayError).replace(/ /g, '&nbsp;').replace(/\n/g, "<br>\n")
+            var formattedException = textToHtml(displayError)
             return '<span style="color:'+purple+';">Exception: '+formattedException+'</span>'
         },
         log: function(values) {
-            return values.map(function(v) {
-                return htmlEscape(valueToString(v)).replace("\n", "<br>\n")
-            }).join('<br>\n')
+            return '<div>'
+                +values.map(function(v) {
+                    return textToHtml(valueToString(v))
+                }).join(', ')
+            +'</div>'
 
         }
     })
@@ -378,7 +395,7 @@ exports.html = function(unitTest) {
             .locationOuter{\
                 color:'+white+';\
             }\
-            .locationInner{\
+            .locationInner, .expectations {\
                 color:'+gray+';\
             }\
             .lineNumber{\
@@ -421,6 +438,13 @@ function htmlEscape(str) {
             .replace(/'/g, '&#39;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
+}
+
+function textToHtml(text) {
+    return htmlEscape(text)
+            .replace(/ /g, '&nbsp;')
+            .replace(/\n/g, "<br>\n")
+            .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
 }
 
 function timeText(ms) {

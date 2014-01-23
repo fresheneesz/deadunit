@@ -1,0 +1,48 @@
+<body>
+</body>
+<script src='../node_modules/requirejs/require.js'></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+    "use strict";
+
+    require.config({
+        paths: {
+            "deadunit": "../browserPackage/deadunit.browser.gen.umd",
+            "deadunitTests": "generated/deadunitTests.browser.umd",
+            "future": "../node_modules/async-future/generatedBuilds/asyncFuture.umd"
+        }
+    })
+
+    require(['deadunit', 'deadunitTests', 'future'], function(Unit, deadunitTests, Future) {
+        deadunitTests.getTests(Unit, {
+            env: 'browser',
+
+            printTestOutput: function(test, name, timeout) {
+                return browserPrintTest(test)
+            },
+
+            print: function print(str) {
+                $('body').append(str.replace(new RegExp("\n", 'g'), "<br>"))
+            },
+            reset: function() {
+                window.onerror = function() {}
+            }
+        })
+
+        function browserPrintTest(test) {
+            var f = new Future
+            test.events({
+                end: function() {
+                    test.writeHtml($('body')).then(function() {
+                        f.return()
+                    })
+                }
+            })
+
+            return f
+        }
+    })
+
+</script>
+
+
