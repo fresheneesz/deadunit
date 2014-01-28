@@ -55,7 +55,7 @@ exports.getTests = function(Unit, options) {
 
     var simpleSuccess, simpleFailure, simpleException, simpleExceptionNoTrace, simpleAsyncException, simpleTimeout, testGroups
 
-    Future(true) /*
+    Future(true) //*
     .then(function() {
 
         announce("simple success")
@@ -66,7 +66,8 @@ exports.getTests = function(Unit, options) {
 
         return printTestOutput(simpleSuccess, 'simpleSuccess')
 
-    }).then(function() {
+    }) //*
+    .then(function() {
         announce("simple failure")
         options.reset()
 
@@ -141,7 +142,7 @@ exports.getTests = function(Unit, options) {
         })
         return printTestOutput(simpleTimeout, 'simpleTimeout', 500)
 
-    })//*/
+    })
     .then(function() {
         announce("toString")
         options.reset()

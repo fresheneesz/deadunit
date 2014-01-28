@@ -5,7 +5,7 @@ var deadunitInternal = require("./deadunit.internal")
 var Future = require('async-future')
 
 module.exports = deadunitInternal({
-    deadunitCore: require('../deadunitCore/deadunitCore.browser'),
+    deadunitCore: require('deadunit-core/deadunitCore.browser'),
 
     environmentSpecificMethods: function() {
         var red = 'rgb(200,30,30)'

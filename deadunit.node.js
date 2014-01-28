@@ -5,7 +5,7 @@ var deadunitInternal = require("./deadunit.internal")
 var defaultFormats = require('./defaultFormats')
 
 module.exports = deadunitInternal({
-    deadunitCore: require('../deadunitCore/deadunitCore.node'),
+    deadunitCore: require('deadunit-core/deadunitCore.node'),
 
     environmentSpecificMethods: function() {
         this.writeConsole = function(hangingTimeout) {

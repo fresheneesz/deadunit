@@ -149,12 +149,23 @@ I recommend that you use either:
 
 On browsers, since there is nothing as nice as node.js Domains, the`window.onerror` handler is used. The `onerror` handler has [many limitations](http://blog.meldium.com/home/2013/9/30/so-youre-thinking-of-tracking-your-js-errors), one of which is that it doesn't currently return an exception object with a stacktrace. If you want to see a more detailed stacktrace for these kinds of errors, check your browser's console (ahem, if you have one - I'm looking at you older versions of IE) because deadunit will not be able to capture and display a stacktrace in its normal output. One goal for most any code is to have 0 unhandled asyncronous exceptions.
 
+Environment/Browser Support
+=============
+
+* node.js
+* Browsers - note, on browsers, the source is not yet displayed in the output
+ * Chrome 31
+ * Firefox 26
+ * IE 10
+
+This needs more testing! Please help by testing and reporting bugs in other browsers or browser versions!
+
 Todo
 ====
 
+* Test deadunit on more browsers and browser versions
 * change time display so it displays full time (with asynchronous parts) as the primary time
 * add the ability to stream test results to a browser
-* make deadunit work on browsers (standalone)
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Ability to use a sourcemap file to correct line/column numbers
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)

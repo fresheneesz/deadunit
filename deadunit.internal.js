@@ -18,7 +18,7 @@ module.exports = function(options) {
             return defaultFormats.text(this, colorize, /*printOnTheFly=*/false, /*printLateEvents=*/false)
         }
 
-        this.html = function(printLateEvents) {
+        this.html = function() {
             return defaultFormats.html(this, false)
         }
 
