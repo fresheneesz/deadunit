@@ -107,7 +107,12 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 expectations = " - "+things.join(', ')
             }
 
-            return color(c, word)+" ["+color('grey', result.file)+" "+result.line+color('grey', ":"+result.column)+"] "
+            var column = ''
+            if(result.column !== undefined) {
+                column = color('grey', ":"+result.column)
+            }
+
+            return color(c, word)+" ["+color('grey', result.file)+" "+result.line+column+"] "
                         +color(c, linesDisplay)
                         +expectations
         },
@@ -315,10 +320,14 @@ exports.html = function(unitTest, printLateEvents) {
                 expectations = " - "+things.join(', ')
             }
 
+            var column = ''
+            if(result.column !== undefined) {
+                column = ":"+result.column
+            }
+
             return '<div style="color:'+color+';"><span >'+word+'</span>'+
                         " <span class='locationOuter'>[<span class='locationInner'>"
-                                +result.file+" line <span class='lineNumber'>"+result.line+"</span>:"
-                            +result.column+"</span>]"
+                                +result.file+" line <span class='lineNumber'>"+result.line+"</span>"+column+"</span>]"
                         +"</span> "
                     +linesDisplay
                     +' <span class="expectations">'+expectations+'</span>'

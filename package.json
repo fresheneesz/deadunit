@@ -17,7 +17,7 @@
    "name": "MIT",
    "url": "http://www.opensource.org/licenses/mit-license.php"
  },
- "main": "deadunit.js",
+ "main": "deadunit.node.js",
  "repository": {
    "type": "git",
    "url": "git://github.com/fresheneesz/deadunit"

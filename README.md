@@ -1,4 +1,3 @@
-**Status**: API finalized, needs testing
 
 `deadunit`
 ========
