@@ -73,6 +73,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                     result += '\n    The test timed out'.red
                 }
             } else {
+                if(!name) name = "<unnamed test>"
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
@@ -279,6 +280,8 @@ exports.html = function(unitTest, printLateEvents) {
                         });
                     });
                 }
+
+                if(!name) name = "<unnamed test>"
 
                 return '<div class="resultsArea" id="'+mainId+n+'">'+
                             '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+

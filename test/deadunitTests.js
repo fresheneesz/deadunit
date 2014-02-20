@@ -369,6 +369,15 @@ exports.getTests = function(Unit, options) {
 
                 this.ok(test.results() !== undefined, test.results())
             })
+            this.test("nameless subtest", function() {
+                options.reset()
+                var test = Unit.test(function() {
+                    this.test(function() {
+                        this.ok(true)
+                    })
+                })
+                printTestOutput(test, 'nameless subtest', 400)
+            })
 
             this.test("default formats", function() {
                 this.test('string exceptions', function(t) {
