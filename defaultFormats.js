@@ -141,7 +141,7 @@ function valueToString(v) {
     if(v instanceof Error) {
         var otherProperties = []
         for(var n in v) {
-            if(Object.hasOwnProperty.call(v, n) && n !== 'message') {
+            if(Object.hasOwnProperty.call(v, n) && n !== 'message' && n !== 'stack') {
                 otherProperties.push(valueToString(v[n]))
             }
         }

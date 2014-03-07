@@ -193,6 +193,12 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.10
+  * fixing double-printing of exceptions
+* 2.0.9
+  * attempting to work around an npm bug
+* 2.0.4
+  * adding browser support
 * 2.0.1
   * added a note when a test times out
   * added the ability to warn if the script is hanging after `test.writeConsole` prints out the test
