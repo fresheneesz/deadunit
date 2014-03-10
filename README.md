@@ -193,6 +193,8 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.11
+  * add generated browser package to repo (since npm post install doesn't work correctly)
 * 2.0.10
   * fixing double-printing of exceptions
 * 2.0.9
