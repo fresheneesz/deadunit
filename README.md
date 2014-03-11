@@ -69,8 +69,22 @@ Usage
 Unit Tester
 -----------
 
+##### node.js
 ```javascript
 var Unit = require('deadunit')
+```
+
+##### require.js
+```javascript
+require(['node_modules/browserPackage/deadunit.browser.gen.umd'], function(Unit) {
+```
+
+##### browser global-variable
+```javascript
+<script src="/node_modules/deadunit/browserPackage/deadunit.browser.gen.umd.js"></script>
+<script>
+var Unit = deadunit.browser.gen
+</script>
 ```
 
 `Unit.test([<name>, ]<testFunction>)` - runs a suite of unit tests. Returns an ExtendedUnitTest object.
@@ -193,6 +207,8 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.12
+  * keeping up with deadunit-core
 * 2.0.11
   * add generated browser package to repo (since npm post install doesn't work correctly)
 * 2.0.10
