@@ -4,7 +4,7 @@
  "version":"2.0.13",
  "dependencies":{
      "colors":"",
-     "deadunit-core":"2.0.7",
+     "deadunit-core":"2.0.8",
      "proto":"1.0.8",
      "async-future":"0.1.12",
      "build-modules":"1.0.6"
