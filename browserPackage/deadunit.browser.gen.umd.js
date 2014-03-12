@@ -274,6 +274,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                     result += '\n    The test timed out'.red
                 }
             } else {
+                if(!name) name = "<unnamed test>"
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
@@ -341,7 +342,7 @@ function valueToString(v) {
     if(v instanceof Error) {
         var otherProperties = []
         for(var n in v) {
-            if(Object.hasOwnProperty.call(v, n) && n !== 'message') {
+            if(Object.hasOwnProperty.call(v, n) && n !== 'message' && n !== 'stack') {
                 otherProperties.push(valueToString(v[n]))
             }
         }
@@ -480,6 +481,8 @@ exports.html = function(unitTest, printLateEvents) {
                         });
                     });
                 }
+
+                if(!name) name = "<unnamed test>"
 
                 return '<div class="resultsArea" id="'+mainId+n+'">'+
                             '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+
@@ -765,7 +768,7 @@ Future.wrap = function() {
 
 // default
 var unhandledErrorHandler = function(e) {
-    setTimeout(function() { //  nextTick
+    setTimeout(function() {
         throw e
     },0)
 }
@@ -855,10 +858,15 @@ Future.prototype.catch = function(cb) {
             } catch(e) {
                 f.throw(e)
             }
-        } else if(this.hasNext)
-            setNext(f, this.next)
-        else
+        } else if(this.hasNext) {
+            this.next.then(function(v) {
+                f.return(v)
+            }).catch(function(e) {
+                setNext(f, cb(e))
+            })
+        } else {
             f.return(this.result)
+        }
     })
     return f
 }
@@ -868,10 +876,20 @@ Future.prototype.finally = function(cb) {
     var f = new Future
     wait(this, function() {
         try {
-            cb()
-            if(this.hasError)
+            if(this.hasNext) {
+                this.next.then(function(v) {
+                    cb()
+                    f.return(v)
+                }).catch(function(e) {
+                    cb()
+                    f.throw(e)
+                })
+            } else if(this.hasError) {
+                cb()
                 f.throw(this.error)
-            else {
+
+            } else  {
+                cb()
                 f.return(this.result)
             }
         } catch(e) {
@@ -887,6 +905,10 @@ Future.prototype.done = function() {
     wait(this, function() {
         if(this.hasError) {
             unhandledErrorHandler(this.error)
+        } else if(this.hasNext) {
+            this.next.catch(function(e) {
+                unhandledErrorHandler(e)
+            })
         }
     })
 }
@@ -2402,12 +2424,16 @@ module.exports = function(options) {
 
         // emits an event
         this.emit = function(type, eventData) {
-            this.handlers[type].forEach(function(handler) {
-                setTimeout(function() { // next tick
-                    handler.call(undefined, eventData)
-                },0)
-            })
             this.history.push({type:type, data: eventData})
+            this.handlers[type].forEach(function(handler) {
+                try {
+                    handler.call(undefined, eventData)
+                } catch(e) {
+                    setTimeout(function() {
+                        throw e // throw error asynchronously because these error should be separate from the test exceptions
+                    },0)
+                }
+            })
         }
 
         // adds a set of listening handlers to the event stream, and runs those handlers on the stream's history
