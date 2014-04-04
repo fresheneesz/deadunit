@@ -207,6 +207,8 @@ How to submit pull requests:
 Change Log
 =========
 
+* 2.0.15
+  * Adding late-events warning text output
 * 2.0.13
   * keeping up with deadunit-core, updating for a minor stacktrace display bugfix
 * 2.0.12

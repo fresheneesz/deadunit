@@ -20,6 +20,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
             return theString.toString()
     }
 
+    var ended = false
     return formatBasic(unitTest, printOnTheFly, printLateEvents, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
@@ -81,7 +82,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 result += addResults()
             }
 
-            return result
+            return lateEventsWarning()+result
         },
         assert: function(result, test) {
             if(result.success) {
@@ -113,20 +114,37 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 column = color('grey', ":"+result.column)
             }
 
-            return color(c, word)+" ["+color('grey', result.file)+" "+result.line+column+"] "
+            return lateEventsWarning()+color(c, word)+" ["+color('grey', result.file)+" "+result.line+column+"] "
                         +color(c, linesDisplay)
                         +expectations
         },
         exception: function(e) {
-            return color('red', 'Exception: ')
+            return lateEventsWarning()+color('red', 'Exception: ')
                         +color('magenta', valueToString(e))
         },
         log: function(values) {
-            return values.map(function(v) {
+            return lateEventsWarning()+values.map(function(v) {
                 return valueToString(v)
             }).join(', ')
+        },
+        end: function() {
+            ended = true
         }
     })
+
+    var warningHasBeenPrinted = false
+    function lateEventsWarning() {
+        if(ended && !warningHasBeenPrinted && !printLateEvents) {
+            return color('red',
+                'Test results were accessed before asynchronous parts of tests were fully complete'
+                +" If you have tests with asynchronous parts, make sure to use `this.count` to declare how many assertions you're waiting for."
+            )+'\n\n'
+
+            warningHasBeenPrinted = true
+        } else {
+            return ''
+        }
+    }
 }
 
 function valueToMessage(value) {

@@ -11,7 +11,7 @@ module.exports = deadunitInternal({
         this.writeConsole = function(hangingTimeout) {
             if(hangingTimeout === undefined) hangingTimeout = 100
 
-            return defaultFormats.text(this, true, /*printOnTheFly=*/true, hangingTimeout, false).then(function(finalResults) {
+            return defaultFormats.text(this, true, /*printOnTheFly=*/true, false).then(function(finalResults) {
                 console.log('\nFinal test results:')
                 console.log(finalResults)
 
