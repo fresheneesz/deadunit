@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "dependencies": {
     "async-future": {
       "version": "0.1.12",
@@ -19,9 +19,9 @@
       "from": "colors@"
     },
     "deadunit-core": {
-      "version": "3.0.3",
-      "from": "deadunit-core@3.0.3",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-3.0.3.tgz",
+      "version": "4.0.0",
+      "from": "deadunit-core@4.0.0",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.0.tgz",
       "dependencies": {
         "stack-trace": {
           "version": "0.0.7",

@@ -246,7 +246,7 @@ exports.getTests = function(Unit, options) {
 
                 this.count(10)
                 formatBasic(simpleException2, false, 0, {
-                    group: function(name, duration, totalDuration, testSuccesses, testFailures,
+                    group: function(name, totalDuration, testSuccesses, testFailures,
                                           assertSuccesses, assertFailures, exceptions,
                                           testResults, exceptionResults, nestingLevel) {
 
@@ -275,7 +275,7 @@ exports.getTests = function(Unit, options) {
             this.test("formatBasic", function(t) {
                 this.count(4)
                 formatBasic(testGroups, false, 0, {
-                    group: function(name, duration, totalDuration, testSuccesses, testFailures,
+                    group: function(name, totalDuration, testSuccesses, testFailures,
                                           assertSuccesses, assertFailures, exceptions,
                                           testResults, exceptionResults, nestingLevel) {
 
@@ -287,7 +287,7 @@ exports.getTests = function(Unit, options) {
                                     var expectedExceptionResults = 1
                                 }
 
-                                this.count(9)
+                                this.count(8)
                                 t.ok(testSuccesses === 3, testSuccesses)
                                 t.ok(testFailures === 2, testFailures)
                                 t.ok(testResults.length === 5, testResults.length)
@@ -297,7 +297,6 @@ exports.getTests = function(Unit, options) {
                                 t.ok(assertFailures === 7, assertFailures)
                                 t.ok(exceptions === 2, exceptions)
 
-                                t.ok(duration !== undefined)
                                 t.ok(totalDuration !== undefined)
                             })
 

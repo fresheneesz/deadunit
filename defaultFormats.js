@@ -22,7 +22,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
 
     var ended = false
     return formatBasic(unitTest, printOnTheFly, printLateEvents, {
-        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
+        group: function(name, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel, timedOut) {
 
@@ -47,10 +47,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 exceptionColor = finalColor = 'red'
             }
 
-            var durationText = timeText(totalSyncDuration)
-            if(totalSyncDuration+10 < totalDuration) {
-                durationText += " "+color('grey', "("+timeText(totalDuration)+" including asynchronous parts)")
-            }
+            var durationText = timeText(totalDuration)
 
             if(nestingLevel == 0) {
                 var resultsLine = ''
@@ -63,7 +60,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
-                        +" Took "+durationText+"."
+                        +color('grey', " Took "+durationText+".")
 
                 var result = ''
                 if(name) result += color('cyan', name)+'\n'
@@ -78,7 +75,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
-                                +" took "+durationText
+                                +color('grey', " took "+durationText)
                 result += addResults()
             }
 
@@ -212,7 +209,7 @@ exports.html = function(unitTest, printLateEvents) {
 
 
     var formattedTestHtml = formatBasic(unitTest, false, 0, printLateEvents, {
-        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
+        group: function(name, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
                           testResults, exceptionResults, nestingLevel, timedOut) {
 
@@ -229,10 +226,7 @@ exports.html = function(unitTest, printLateEvents) {
                 var foregroundColor = brightGreen
             }
 
-            var durationText = timeText(totalSyncDuration)
-            if(totalSyncDuration+10 < totalDuration) {
-                durationText += ' <span class="asyncTime">'+"("+timeText(totalDuration)+" including asynchronous parts)</span>"
-            }
+            var durationText = timeText(totalDuration)
 
             if(nestingLevel === 0) {
 

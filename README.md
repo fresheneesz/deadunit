@@ -106,7 +106,6 @@ var Unit = deadunit.browser.gen
        `assertSuccesses, assertFailures, exceptions, results, exceptionResults, nestingLevel)`
        * `name` is the test group name
        * `totalDuration` - the total duration the test took from start to the last test-action
-       * `totalSynchronousDuration` - the time it took for the test function to complete synchronously (ignores all asynchronous parts)
        * `testCaseSuccesses` - the number of successful asserts (the `ok` method) and groups in this test group. *Does not count asserts and test-groups inside subtest groups*
        * `testCaseFailures` - the number of failed asserts and groups in this test group. *Does not count asserts and test-groups inside subtest groups*
        * `assertSuccesses` - the number of successful asserts in this test group and all subgroups.
@@ -208,6 +207,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 4.0.0 - removing totalSynchronousDuration from format, and upgrading to deadunit-core 4.0.0 (which fixes some timeout problems)
 * 3.0.1 - deadunit-core bugfix
 * 3.0.0
   * updating to new version of deadunit-core to bring in some improvements (minor breaking change)

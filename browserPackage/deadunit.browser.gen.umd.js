@@ -84,7 +84,7 @@ function formatGroup(testResults, format, nestingLevel) {
 
     exceptions+= testResults.exceptions.length
 
-    var formattedGroup = format.group(testResults.name, testResults.totalSyncDuration, testResults.duration,
+    var formattedGroup = format.group(testResults.name, testResults.duration,
                                       testCaseSuccesses, testCaseFailures,
                                       assertSuccesses, assertFailures, exceptions,
                                       results, exceptionResults, nestingLevel, testResults.timeout)
@@ -223,7 +223,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
 
     var ended = false
     return formatBasic(unitTest, printOnTheFly, printLateEvents, {
-        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
+        group: function(name, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel, timedOut) {
 
@@ -248,10 +248,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 exceptionColor = finalColor = 'red'
             }
 
-            var durationText = timeText(totalSyncDuration)
-            if(totalSyncDuration+10 < totalDuration) {
-                durationText += " "+color('grey', "("+timeText(totalDuration)+" including asynchronous parts)")
-            }
+            var durationText = timeText(totalDuration)
 
             if(nestingLevel == 0) {
                 var resultsLine = ''
@@ -264,7 +261,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
-                        +" Took "+durationText+"."
+                        +color('grey', " Took "+durationText+".")
 
                 var result = ''
                 if(name) result += color('cyan', name)+'\n'
@@ -279,7 +276,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
                                 +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
-                                +" took "+durationText
+                                +color('grey', " took "+durationText)
                 result += addResults()
             }
 
@@ -413,7 +410,7 @@ exports.html = function(unitTest, printLateEvents) {
 
 
     var formattedTestHtml = formatBasic(unitTest, false, 0, printLateEvents, {
-        group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
+        group: function(name, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
                           testResults, exceptionResults, nestingLevel, timedOut) {
 
@@ -430,10 +427,7 @@ exports.html = function(unitTest, printLateEvents) {
                 var foregroundColor = brightGreen
             }
 
-            var durationText = timeText(totalSyncDuration)
-            if(totalSyncDuration+10 < totalDuration) {
-                durationText += ' <span class="asyncTime">'+"("+timeText(totalDuration)+" including asynchronous parts)</span>"
-            }
+            var durationText = timeText(totalDuration)
 
             if(nestingLevel === 0) {
 
@@ -2413,6 +2407,7 @@ module.exports = function(options) {
                 fakeTest.manager = this.manager
                 fakeTest.mainTester.timeoutCount = 0
                 fakeTest.timeouts = []
+                fakeTest.onDoneCallbacks = []
                 fakeTest.mainTestState = {get unhandledErrorHandler(){return fakeTest.unhandledErrorHandler || options.defaultTestErrorHandler(fakeTest)}}
 
                 options.initializeMainTest(fakeTest.mainTestState)
@@ -2421,6 +2416,9 @@ module.exports = function(options) {
                 fakeTest.onDone = function() { // will execute when this test is done
                     done(fakeTest)
                     options.mainTestDone(fakeTest.mainTestState)
+                }
+                fakeTest.callOnDone = function(cb) {
+                    fakeTest.onDoneCallbacks.push(cb)
                 }
 
             fakeTest.mainSubTest = UnitTester.prototype.test.apply(fakeTest, args) // set so the error handler can access the real test
@@ -2541,8 +2539,24 @@ module.exports = function(options) {
 
                 tester.onDone = function() { // will execute when this test is done
                     that.doneTests += 1
+
+                    that.manager.emit('groupEnd', {
+                        id: tester.id,
+                        time: now()
+                    })
+
                     checkGroupDone(that)
                 }
+
+                tester.mainTester.callOnDone(function() {
+                    if(!tester.doneCalled) { // a timeout happened - end the test
+                        tester.doneCalled = true
+                        that.manager.emit('groupEnd', {
+                            id: tester.id,
+                            time: now()
+                        })
+                    }
+                })
 
                 this.manager.emit('group', {
                     id: tester.id,
@@ -2580,11 +2594,6 @@ module.exports = function(options) {
                         time: now()
                     })
                 }
-
-                this.manager.emit('groupEnd', {
-                    id: tester.id,
-                    time: now()
-                })
 
                 tester.groupEnded = true
                 checkGroupDone(tester)
@@ -2633,7 +2642,6 @@ module.exports = function(options) {
 
             timeout: function(t) {
                 timeout(this, t, false)
-
             },
 
             error: function(handler) {
@@ -2646,7 +2654,7 @@ module.exports = function(options) {
             && ((group.countExpected === undefined || group.countExpected <= group.doneAsserts+group.doneTests)
                 && group.runningTests === group.doneTests)
         ) {
-            group.doneCalled = true // don't call
+            group.doneCalled = true // don't call twice
             group.onDone()
         }
 
@@ -2660,10 +2668,12 @@ module.exports = function(options) {
                 error: new Error("done called more than once (probably because the test timed out before it finished)")
             })
         } else {
-            endTest(unitTester, 'normal')
             unitTester.mainTester.timeouts.forEach(function(to) {
                 clearTimeout(to)
             })
+            unitTester.mainTester.timeouts = []
+
+            endTest(unitTester, 'normal')
         }
     }
 
@@ -2672,9 +2682,10 @@ module.exports = function(options) {
         that.mainTester.timeoutCount++
 
         var to = setTimeout(function() {
-            that.mainTester.timeoutCount--
-            if(that.mainTester.timeoutCount === 0 && !that.mainTester.ended) {
-                endTest(that, 'timeout')
+            remove(that.mainTester.timeouts, to)
+
+            if(that.mainTester.timeouts.length === 0 && !that.mainTester.ended) {
+                endTest(that.mainTester, 'timeout')
             }
         }, t)
 
@@ -2684,12 +2695,26 @@ module.exports = function(options) {
             that.mainTester.timeouts.default = to
         } else if(that.mainTester.timeouts.default !== undefined) {
             clearTimeout(that.mainTester.timeouts.default)
-            that.mainTester.timeoutCount--
+            remove(that.mainTester.timeouts, that.mainTester.timeouts.default)
+            that.mainTester.timeouts.default = undefined
+        }
+
+        function remove(array, item) {
+            var index = array.indexOf(item)
+            if(index === -1)
+                throw Error("Item doesn't exist to remove")
+            array.splice(index, 1)
         }
     }
 
     function endTest(that, type) {
         that.mainTester.ended = true
+
+        if(that.mainTester === that) { // if its the main tester
+            that.onDoneCallbacks.forEach(function(cb) {
+                cb()
+            })
+        }
 
         that.manager.emit('end', {
             type: type,
@@ -3506,14 +3531,6 @@ module.exports = function returnResults(unitTestObject, printLateEvents) {
         },
         groupEnd: function(e) {
             setGroupDuration(e.id, e.time)
-
-            groups[e.id].totalSyncDuration = e.time - groups[e.id].time
-
-            groups[e.id].syncDuration = groups[e.id].totalSyncDuration
-            if(groups[e.id].beforeDuration !== undefined)
-                groups[e.id].syncDuration -= groups[e.id].beforeDuration
-            if(groups[e.id].afterDuration !== undefined)
-                groups[e.id].syncDuration -= groups[e.id].afterDuration
         },
         end: function(e) {
             primaryGroup.timeout = e.type === 'timeout'
