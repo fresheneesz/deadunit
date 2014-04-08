@@ -59,7 +59,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
 
 
 
-                resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful groups. ')+
+                resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful tests. ')+
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
@@ -267,7 +267,7 @@ exports.html = function(unitTest, printLateEvents) {
                        '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
                             '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
                                 '<div style="float:right;"><i>click on this bar</i></div>'+
-                                '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful test groups. '+
+                                '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful tests. '+
                                 '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
                                 ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
                                 ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+

@@ -12,7 +12,7 @@ deadunitTests.getTests(Unit, {
     env: 'node',
 
     printTestOutput: function(test, name, timeout) {
-        test.writeConsole(timeout)
+        return test.writeConsole(timeout)
         .then(function() {
             return test.html()
         }).then(function(html){

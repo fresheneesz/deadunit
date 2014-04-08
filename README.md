@@ -201,12 +201,15 @@ How to submit pull requests:
 5. edit!
 6. If it's a code change, please add to the unit tests (at test/testDeadunit.js) to verify that your change works
 7. When you're done, run the unit tests and ensure they all pass
+   * Make sure you run `node build.js` to build the browser packages (browserPackage/deadunitCore.browser.gen.umd.js and test/deadunitTests.browser.umd.js) before running the browser tests
 8. Commit and push your changes
 9. Submit a pull request: https://help.github.com/articles/creating-a-pull-request
 
 Change Log
 =========
 
+* 3.0.0
+  * updating to new version of deadunit-core to bring in some improvements (minor breaking change)
 * 2.0.15
   * Adding late-events warning text output
 * 2.0.13

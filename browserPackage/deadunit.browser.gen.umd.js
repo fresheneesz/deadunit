@@ -198,7 +198,7 @@ module.exports = function(options) {
 }
 
 
-},{"./basicFormatter":1,"./defaultFormats":4,"proto":19}],4:[function(require,module,exports){
+},{"./basicFormatter":1,"./defaultFormats":4,"proto":21}],4:[function(require,module,exports){
 var util = require("util")
 
 var Future = require('async-future')
@@ -221,6 +221,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
             return theString.toString()
     }
 
+    var ended = false
     return formatBasic(unitTest, printOnTheFly, printLateEvents, {
         group: function(name, totalSyncDuration, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
@@ -259,7 +260,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
 
 
 
-                resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful groups. ')+
+                resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful tests. ')+
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
                         ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
                         ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
@@ -282,7 +283,7 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 result += addResults()
             }
 
-            return result
+            return lateEventsWarning()+result
         },
         assert: function(result, test) {
             if(result.success) {
@@ -314,20 +315,37 @@ exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, pri
                 column = color('grey', ":"+result.column)
             }
 
-            return color(c, word)+" ["+color('grey', result.file)+" "+result.line+column+"] "
+            return lateEventsWarning()+color(c, word)+" ["+color('grey', result.file)+" "+result.line+column+"] "
                         +color(c, linesDisplay)
                         +expectations
         },
         exception: function(e) {
-            return color('red', 'Exception: ')
+            return lateEventsWarning()+color('red', 'Exception: ')
                         +color('magenta', valueToString(e))
         },
         log: function(values) {
-            return values.map(function(v) {
+            return lateEventsWarning()+values.map(function(v) {
                 return valueToString(v)
             }).join(', ')
+        },
+        end: function() {
+            ended = true
         }
     })
+
+    var warningHasBeenPrinted = false
+    function lateEventsWarning() {
+        if(ended && !warningHasBeenPrinted && !printLateEvents) {
+            return color('red',
+                'Test results were accessed before asynchronous parts of tests were fully complete'
+                +" If you have tests with asynchronous parts, make sure to use `this.count` to declare how many assertions you're waiting for."
+            )+'\n\n'
+
+            warningHasBeenPrinted = true
+        } else {
+            return ''
+        }
+    }
 }
 
 function valueToMessage(value) {
@@ -450,7 +468,7 @@ exports.html = function(unitTest, printLateEvents) {
                        '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
                             '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
                                 '<div style="float:right;"><i>click on this bar</i></div>'+
-                                '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful test groups. '+
+                                '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful tests. '+
                                 '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
                                 ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
                                 ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+
@@ -2320,7 +2338,7 @@ function load(url) {
 
     return result
 }
-},{"./deadunitCore":15,"async-future":6,"stackinfo":17}],15:[function(require,module,exports){
+},{"./deadunitCore":15,"async-future":6,"stackinfo":18}],15:[function(require,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -2368,8 +2386,28 @@ module.exports = function(options) {
     // the prototype of objects used to manage accessing and displaying results of a unit test
     var UnitTest = proto(function() {
         this.init = function(/*mainName=undefined, groups*/) {
+            var that = this
+            var args = arguments
             this.manager = EventManager()
 
+            setTimeout(function() {
+                runTest.call(that, args)
+            },0)
+        }
+
+        this.events = function(handlers) {
+            this.manager.add(handlers)
+            return this
+        }
+
+        this.results = function(printLateEvents) {
+            if(printLateEvents === undefined) printLateEvents = true
+            return processResults(this, printLateEvents)
+        }
+
+        // private
+
+        function runTest(args) {
             var fakeTest = new UnitTester()
                 fakeTest.id = undefined // fake test doesn't get an id
                 fakeTest.manager = this.manager
@@ -2385,20 +2423,11 @@ module.exports = function(options) {
                     options.mainTestDone(fakeTest.mainTestState)
                 }
 
-            fakeTest.mainSubTest = UnitTester.prototype.test.apply(fakeTest, arguments) // set so the error handler can access the real test
+            fakeTest.mainSubTest = UnitTester.prototype.test.apply(fakeTest, args) // set so the error handler can access the real test
             this.mainTester = fakeTest
 
             fakeTest.groupEnded = true
             checkGroupDone(fakeTest)
-        }
-
-        this.events = function(handlers) {
-            this.manager.add(handlers)
-        }
-
-        this.results = function(printLateEvents) {
-            if(printLateEvents === undefined) printLateEvents = true
-            return processResults(this, printLateEvents)
         }
     })
 
@@ -2447,7 +2476,12 @@ module.exports = function(options) {
 
             // then have those handlers listen on future events
             for(var type in handlers) {
-                this.handlers[type].push(handlers[type])
+                var typeHandlers = this.handlers[type]
+                if(typeHandlers === undefined) {
+                    throw new Error("event type '"+type+"' invalid")
+                }
+
+                typeHandlers.push(handlers[type])
             }
         }
     })
@@ -2619,13 +2653,18 @@ module.exports = function(options) {
     }
 
     function done(unitTester) {
-        if(unitTester.mainTester.ended)
-            throw Error("done called more than once")
-
-        endTest(unitTester, 'normal')
-        unitTester.mainTester.timeouts.forEach(function(to) {
-            clearTimeout(to)
-        })
+        if(unitTester.mainTester.ended) {
+            unitTester.mainTester.manager.emit('exception', {
+                parent: unitTester.mainTester.mainSubTest.id,
+                time: now(),
+                error: new Error("done called more than once (probably because the test timed out before it finished)")
+            })
+        } else {
+            endTest(unitTester, 'normal')
+            unitTester.mainTester.timeouts.forEach(function(to) {
+                clearTimeout(to)
+            })
+        }
     }
 
     // if a timeout is the default, it can be overridden
@@ -2705,7 +2744,7 @@ module.exports = function(options) {
                     return lines.reverse().join('\n')
                 }
                 if(lineNumber - n < 0) {
-                    throw Error("Didn't get any lines")//return ""	// something went wrong if this is being returned (the functionName wasn't found above - means you didn't get the function name right)
+                    return "<no lines found (possibly an error?)> "	// something went wrong if this is being returned (the functionName wasn't found above - means you didn't get the function name right)
                 }
             }
         } else {
@@ -2729,7 +2768,58 @@ module.exports = function(options) {
         test: UnitTest
     }
 }
-},{"./processResults":18,"async-future":6,"path":10,"proto":19}],16:[function(require,module,exports){
+},{"./processResults":20,"async-future":6,"path":10,"proto":21}],16:[function(require,module,exports){
+
+
+module.exports = exceptionMode(createException()) // basically what browser this is
+
+// verbatim from `mode` in stacktrace.js as of 2014-01-23
+function exceptionMode(e) {
+    if (e['arguments'] && e.stack) {
+        return 'chrome';
+    } else if (e.stack && e.sourceURL) {
+        return 'safari';
+    } else if (e.stack && e.number) {
+        return 'ie';
+    } else if (typeof e.message === 'string' && typeof window !== 'undefined' && window.opera) {
+        // e.message.indexOf("Backtrace:") > -1 -> opera
+        // !e.stacktrace -> opera
+        if (!e.stacktrace) {
+            return 'opera9'; // use e.message
+        }
+        // 'opera#sourceloc' in e -> opera9, opera10a
+        if (e.message.indexOf('\n') > -1 && e.message.split('\n').length > e.stacktrace.split('\n').length) {
+            return 'opera9'; // use e.message
+        }
+        // e.stacktrace && !e.stack -> opera10a
+        if (!e.stack) {
+            return 'opera10a'; // use e.stacktrace
+        }
+        // e.stacktrace && e.stack -> opera10b
+        if (e.stacktrace.indexOf("called from line") < 0) {
+            return 'opera10b'; // use e.stacktrace, format differs from 'opera10a'
+        }
+        // e.stacktrace && e.stack -> opera11
+        return 'opera11'; // use e.stacktrace, format differs from 'opera10a', 'opera10b'
+    } else if (e.stack && !e.fileName) {
+        // Chrome 27 does not have e.arguments as earlier versions,
+        // but still does not have e.fileName as Firefox
+        return 'chrome';
+    } else if (e.stack) {
+        return 'firefox';
+    }
+    return 'other';
+}
+
+function createException() {
+    try {
+        this.undef();
+    } catch (e) {
+        return e;
+    }
+}
+
+},{}],17:[function(require,module,exports){
 // Domain Public by Eric Wendelin http://eriwen.com/ (2008)
 //                  Luke Smith http://lucassmith.name/ (2008)
 //                  Loic Dachary <loic@dachary.org> (2008)
@@ -3192,10 +3282,10 @@ module.exports = function(options) {
 
 	return printStackTrace;
 }));
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var printStackTrace = require('stacktrace-js')
-
-var mode = exceptionMode(createException()) // basically what browser this is
+var parsers = require('./tracelineParser')
+var mode = require('./exceptionMode')
 
 module.exports = function(ex) {
     if(parsers[mode] === undefined)
@@ -3247,60 +3337,19 @@ function parseStacktrace(trace) {
     return results
 }
 
-// verbatim from `mode` in stacktrace.js as of 2014-01-23
-function exceptionMode(e) {
-    if (e['arguments'] && e.stack) {
-        return 'chrome';
-    } else if (e.stack && e.sourceURL) {
-        return 'safari';
-    } else if (e.stack && e.number) {
-        return 'ie';
-    } else if (typeof e.message === 'string' && typeof window !== 'undefined' && window.opera) {
-        // e.message.indexOf("Backtrace:") > -1 -> opera
-        // !e.stacktrace -> opera
-        if (!e.stacktrace) {
-            return 'opera9'; // use e.message
-        }
-        // 'opera#sourceloc' in e -> opera9, opera10a
-        if (e.message.indexOf('\n') > -1 && e.message.split('\n').length > e.stacktrace.split('\n').length) {
-            return 'opera9'; // use e.message
-        }
-        // e.stacktrace && !e.stack -> opera10a
-        if (!e.stack) {
-            return 'opera10a'; // use e.stacktrace
-        }
-        // e.stacktrace && e.stack -> opera10b
-        if (e.stacktrace.indexOf("called from line") < 0) {
-            return 'opera10b'; // use e.stacktrace, format differs from 'opera10a'
-        }
-        // e.stacktrace && e.stack -> opera11
-        return 'opera11'; // use e.stacktrace, format differs from 'opera10a', 'opera10b'
-    } else if (e.stack && !e.fileName) {
-        // Chrome 27 does not have e.arguments as earlier versions,
-        // but still does not have e.fileName as Firefox
-        return 'chrome';
-    } else if (e.stack) {
-        return 'firefox';
-    }
-    return 'other';
-}
+// here because i'm lazy, they're here for testing only
+module.exports.parsers = parsers
+module.exports.mode = mode
+},{"./exceptionMode":16,"./tracelineParser":19,"stacktrace-js":17}],19:[function(require,module,exports){
 
-function createException() {
-    try {
-        this.undef();
-    } catch (e) {
-        return e;
-    }
-}
-
-var parsers = {
+module.exports = {
     chrome: function(line) {
         var m = line.match(CHROME_STACK_LINE);
         if (m) {
-            var file = m[7] || m[14] || m[21]
-            var fn = m[4] || m[11] || m[18]
-            var lineNumber = m[9] || m[16]
-            var column = m[10] || m[17]
+            var file = m[8] || m[15] || m[22]
+            var fn = m[4] || m[7] || m[12] || m[19]
+            var lineNumber = m[10] || m[17]
+            var column = m[11] || m[18]
         } else {
             //throw new Error("Couldn't parse exception line: "+line)
         }
@@ -3359,10 +3408,13 @@ var STACKTRACE_JS_GETSOURCE_FAILURE = 'getSource failed with url'
 var CHROME_STACKTRACE_JS_GETSOURCE_FAILURE = STACKTRACE_JS_GETSOURCE_FAILURE+'((?!'+'\\(\\)@'+').)*'
 
 var CHROME_FILE_AND_LINE = URL_PATTERN_+'(:(\\d*):(\\d*))'
-var CHROME_COMPOUND_IDENTIFIER = "((new )?"+IDENTIFIER_PATTERN_+'(\\.'+IDENTIFIER_PATTERN_+')*)'
+var CHROME_IDENTIFIER_PATTERN = '\\<?'+IDENTIFIER_PATTERN_+'\\>?'
+var CHROME_COMPOUND_IDENTIFIER = "((new )?"+CHROME_IDENTIFIER_PATTERN+'(\\.'+CHROME_IDENTIFIER_PATTERN+')*)'
+var CHROME_UNKNOWN_IDENTIFIER = "(\\(\\?\\))"
 
 // output from stacktrace.js is: "name()@..." instead of "name (...)"
-var CHROME_ANONYMOUS_FUNCTION = '('+CHROME_STACKTRACE_JS_GETSOURCE_FAILURE+'|'+CHROME_COMPOUND_IDENTIFIER+')\\(\\)'+'@'+CHROME_FILE_AND_LINE
+var CHROME_ANONYMOUS_FUNCTION = '('+CHROME_STACKTRACE_JS_GETSOURCE_FAILURE+'|'+CHROME_COMPOUND_IDENTIFIER+'|'+CHROME_UNKNOWN_IDENTIFIER+')'
+                                    +'\\(\\)'+'@'+CHROME_FILE_AND_LINE
 var CHROME_NORMAL_FUNCTION = CHROME_COMPOUND_IDENTIFIER+' \\('+CHROME_FILE_AND_LINE+'\\)'
 var CHROME_NATIVE_FUNCTION = CHROME_COMPOUND_IDENTIFIER+' (\\(native\\))'
 
@@ -3384,7 +3436,7 @@ var IE_ANONYMOUS = '('+IE_WHITESPACE+'*({anonymous}\\(\\)))@\\('+IE_FILE_AND_LIN
 var IE_NORMAL_FUNCTION = '('+IDENTIFIER_PATTERN_+')@'+IE_FILE_AND_LINE
 var IE_FUNCTION_CALL = '('+IE_NORMAL_FUNCTION+'|'+IE_ANONYMOUS+')'+IE_WHITESPACE+'*'
 var IE_STACK_LINE = new RegExp('^'+IE_FUNCTION_CALL+'$')
-},{"stacktrace-js":16}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function returnResults(unitTestObject, printLateEvents) {
 
     var results;
@@ -3393,24 +3445,6 @@ module.exports = function returnResults(unitTestObject, printLateEvents) {
 
     var primaryGroup;
     var ended = false
-
-    var warningWritten = false
-    function warnAboutLateEvents() {
-        if(!warningWritten) {
-            unitTestObject.mainTester.mainTester.mainTestState.unhandledErrorHandler(
-                'Test results were accessed before asynchronous parts of tests were fully complete'
-                +" If you have tests with asynchronous parts, make sure to use `this.count` to declare how many assertions you're waiting for."
-            )
-            warningWritten = true
-        }
-    }
-
-    function writeLateEvent(ended, eventToPrint) {
-        if(ended && printLateEvents) {
-            warnAboutLateEvents()
-            unitTestObject.mainTester.mainTester.mainTestState.unhandledErrorHandler(eventToPrint)
-        }
-    }
 
     unitTestObject.events({
         group: function(e) {
@@ -3439,29 +3473,21 @@ module.exports = function returnResults(unitTestObject, printLateEvents) {
             }
         },
         assert: function(e) {
-            writeLateEvent(ended,JSON.stringify(e))
-
             e.type = 'assert'
             groups[e.parent].results.push(e)
             setGroupDuration(e.parent, e.time)
         },
         count: function(e) {
-            writeLateEvent(ended,JSON.stringify(e))
-
             e.type = 'assert'
             setGroupDuration(e.parent, e.time)
 
             groupMetadata[e.parent].countInfo = e
         },
         exception: function(e) {
-            writeLateEvent(ended,"At time: "+e.time+" "+(e.error.stack?e.error.stack:e.error.toString()))
-
             groups[e.parent].exceptions.push(e.error)
             setGroupDuration(e.parent, e.time)
         },
         log: function(e) {
-            writeLateEvent(ended,JSON.stringify(e))
-
             e.type = 'log'
             groups[e.parent].results.push(e)
             setGroupDuration(e.parent, e.time)
@@ -3543,7 +3569,7 @@ function eachTest(test, callback, parent) {
 
     callback(test, parent)
 }
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 

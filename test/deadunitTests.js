@@ -150,6 +150,8 @@ exports.getTests = function(Unit, options) {
         var futuresToWaitOn = []
         testGroups = Unit.test("Testing the Unit Tester", function() {
 
+            this.ok(true) // here to test to make sure these aren't being counted as tests alongside the this.tests
+
             this.test("Test Some Stuff", function() {
                 this.test("assertSomething", function() {
                     this.ok(5 === 5)
@@ -232,7 +234,7 @@ exports.getTests = function(Unit, options) {
         print(string)	// returns plain text
         return printTestOutput(testGroups, 'testGroups', 400)
 
-    })//*
+    })
     .then(function() {
         var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
             var formatBasic = require("../basicFormatter")
@@ -286,12 +288,12 @@ exports.getTests = function(Unit, options) {
                                 }
 
                                 this.count(9)
-                                t.ok(testSuccesses === 2, testSuccesses)
+                                t.ok(testSuccesses === 3, testSuccesses)
                                 t.ok(testFailures === 2, testFailures)
-                                t.ok(testResults.length === 4, testResults.length)
+                                t.ok(testResults.length === 5, testResults.length)
                                 t.ok(exceptionResults.length === expectedExceptionResults, exceptionResults.length)
 
-                                t.ok(assertSuccesses === 9, assertSuccesses)
+                                t.ok(assertSuccesses === 10, assertSuccesses)
                                 t.ok(assertFailures === 7, assertFailures)
                                 t.ok(exceptions === 2, exceptions)
 
@@ -361,14 +363,6 @@ exports.getTests = function(Unit, options) {
                 })
             })
 
-            this.test("results are available", function() {
-                options.reset()
-                var test = Unit.test(function() {
-                    this.ok(true)
-                })
-
-                this.ok(test.results() !== undefined, test.results())
-            })
             this.test("nameless subtest", function() {
                 options.reset()
                 var test = Unit.test(function() {
