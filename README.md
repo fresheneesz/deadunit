@@ -208,6 +208,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 3.0.1 - deadunit-core bugfix
 * 3.0.0
   * updating to new version of deadunit-core to bring in some improvements (minor breaking change)
 * 2.0.15
