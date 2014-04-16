@@ -174,7 +174,6 @@ Todo
 ====
 
 * Test deadunit on more browsers and browser versions
-* change time display so it displays full time (with asynchronous parts) as the primary time
 * add the ability to stream test results to a browser
 * Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Ability to use a sourcemap file to correct line/column numbers
