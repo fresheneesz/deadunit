@@ -2,11 +2,9 @@
 `deadunit`
 ========
 
-A *dead*-simple nesting unit testing module for node.js and in-browser!.
+A *dead*-simple nesting unit testing module for testing in node.js and the browser!.
 This repository provides default visual representations for the output of [deadunit-core](https://github.com/fresheneesz/deadunitCore),
   as well as a formatter that can be used to easily create custom test visualizations.
-
-'*Now with browser output!*'
 
 Why use it over [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https://github.com/caolan/nodeunit) / [Wizek's Tree](https://github.com/Wizek/Tree)
 ==================
@@ -69,7 +67,7 @@ Usage
 Unit Tester
 -----------
 
-##### node.js
+##### node.js or [webpack](https://github.com/webpack/webpack)
 ```javascript
 var Unit = require('deadunit')
 ```
@@ -133,7 +131,7 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 `test.html(<printLateEvents>)` - returns a string containing html-formatted test results. *See below for screenshots.*
   * `<printLateEvents>` - (optional - default true) if true, a warning will be printed when events come in after the results have been written.
 
-`test.results(<printLateEvents>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage). When called from deadunit, doesn't print a warning for late events, use the `events` method if you need to detect that.
+`test.results()` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage). When called from deadunit, doesn't print a warning for late events, use the `events` method if you need to detect that.
 
 ### Screenshots ###
 
@@ -201,12 +199,19 @@ How to submit pull requests:
 6. If it's a code change, please add to the unit tests (at test/testDeadunit.js) to verify that your change works
 7. When you're done, run the unit tests and ensure they all pass
    * Make sure you run `node build.js` to build the browser packages (browserPackage/deadunitCore.browser.gen.umd.js and test/deadunitTests.browser.umd.js) before running the browser tests
+   * Test the following (lots of it requires visually make sure everything looks right):
+    * node test/testDeadunit.node.js
+    * open test/allGenerated.node.html in browsers
+    * open test/testDeadunitBrowserGlobal.html in browsers
+    * open testDeadunit.html in browsers
+    * run `node testServer` and open http://localhost:8000/ in browsers
 8. Commit and push your changes
 9. Submit a pull request: https://help.github.com/articles/creating-a-pull-request
 
 Change Log
 =========
 
+* 4.0.1 - updating deadunit-core to get support for source-code lines in-browser
 * 4.0.0 - removing totalSynchronousDuration from format, and upgrading to deadunit-core 4.0.0 (which fixes some timeout problems)
 * 3.0.1 - deadunit-core bugfix
 * 3.0.0

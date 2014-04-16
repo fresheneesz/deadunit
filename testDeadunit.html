@@ -1,15 +1,15 @@
 <body>
 </body>
-<script src='../node_modules/requirejs/require.js'></script>
+<script src='node_modules/requirejs/require.js'></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script>
     "use strict";
 
     require.config({
         paths: {
-            "deadunit": "../browserPackage/deadunit.browser.gen.umd",
-            "deadunitTests": "generated/deadunitTests.browser.umd",
-            "future": "../node_modules/async-future/generatedBuilds/asyncFuture.umd"
+            "deadunit": "browserPackage/deadunit.browser.gen.umd",
+            "deadunitTests": "test/generated/deadunitTests.browser.umd",
+            "future": "node_modules/async-future/generatedBuilds/asyncFuture.umd"
         }
     })
 
