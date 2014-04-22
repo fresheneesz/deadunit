@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "4.0.0",
+  "version": "4.0.2",
   "dependencies": {
     "async-future": {
       "version": "0.1.12",
@@ -19,19 +19,74 @@
       "from": "colors@"
     },
     "deadunit-core": {
-      "version": "4.0.2",
-      "from": "deadunit-core@4.0.2",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.2.tgz",
+      "version": "4.0.3",
+      "from": "deadunit-core@4.0.3",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.3.tgz",
       "dependencies": {
+        "async-future": {
+          "version": "0.1.6",
+          "from": "https://registry.npmjs.org/async-future/-/async-future-0.1.6.tgz",
+          "resolved": "https://registry.npmjs.org/async-future/-/async-future-0.1.6.tgz",
+          "dependencies": {
+            "trimArguments": {
+              "version": "1.0.0",
+              "from": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz",
+              "resolved": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz"
+            },
+            "buildModules": {
+              "version": "1.0.0",
+              "from": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
+              "resolved": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
+              "dependencies": {
+                "uglify-js": {
+                  "version": "2.4.12",
+                  "from": "uglify-js@2.4.12",
+                  "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.12.tgz",
+                  "dependencies": {
+                    "async": {
+                      "version": "0.2.10",
+                      "from": "async@0.2.10",
+                      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
+                    },
+                    "source-map": {
+                      "version": "0.1.31",
+                      "from": "source-map@0.1.31",
+                      "dependencies": {
+                        "amdefine": {
+                          "version": "0.1.0",
+                          "from": "amdefine@0.1.0"
+                        }
+                      }
+                    },
+                    "optimist": {
+                      "version": "0.3.7",
+                      "from": "optimist@0.3.7",
+                      "dependencies": {
+                        "wordwrap": {
+                          "version": "0.0.2",
+                          "from": "wordwrap@0.0.2"
+                        }
+                      }
+                    },
+                    "uglify-to-browserify": {
+                      "version": "1.0.1",
+                      "from": "uglify-to-browserify@1.0.1"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "stack-trace": {
           "version": "0.0.7",
           "from": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.7.tgz",
           "resolved": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.7.tgz"
         },
         "stackinfo": {
-          "version": "1.0.2",
-          "from": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.2.tgz",
-          "resolved": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.2.tgz",
+          "version": "1.0.3",
+          "from": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.3.tgz",
+          "resolved": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.3.tgz",
           "dependencies": {
             "stacktrace-js": {
               "version": "0.6.0",
@@ -43,53 +98,8 @@
       }
     },
     "proto": {
-      "version": "1.0.8",
-      "from": "proto@1.0.8",
-      "resolved": "https://registry.npmjs.org/proto/-/proto-1.0.8.tgz",
-      "dependencies": {
-        "buildModules": {
-          "version": "1.0.0",
-          "from": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
-          "resolved": "https://github.com/fresheneesz/buildModules/archive/2f50ea0830b0fa580c087b4bfa947de2e7b7d7c3.tar.gz",
-          "dependencies": {
-            "uglify-js": {
-              "version": "2.4.12",
-              "from": "uglify-js@~2.4.0",
-              "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.12.tgz",
-              "dependencies": {
-                "async": {
-                  "version": "0.2.10",
-                  "from": "async@~0.2.6"
-                },
-                "source-map": {
-                  "version": "0.1.31",
-                  "from": "source-map@~0.1.7",
-                  "dependencies": {
-                    "amdefine": {
-                      "version": "0.1.0",
-                      "from": "amdefine@>=0.0.4"
-                    }
-                  }
-                },
-                "optimist": {
-                  "version": "0.3.7",
-                  "from": "optimist@~0.3.5",
-                  "dependencies": {
-                    "wordwrap": {
-                      "version": "0.0.2",
-                      "from": "wordwrap@~0.0.2"
-                    }
-                  }
-                },
-                "uglify-to-browserify": {
-                  "version": "1.0.1",
-                  "from": "uglify-to-browserify@~1.0.0"
-                }
-              }
-            }
-          }
-        }
-      }
+      "version": "1.0.9",
+      "from": "proto@1.0.9"
     }
   }
 }

@@ -31,7 +31,7 @@ var Unit = require('deadunit')
 var test = Unit.test('some test name', function() {
     this.count(5) // expect all 5 `ok` assertions
 
-    var obj = someFunctionToTest()
+    var obj = {x:5, y: 'noty?'}
     this.ok(obj.x === 5)
     this.ok(obj.y === 'y')
 
@@ -40,14 +40,14 @@ var test = Unit.test('some test name', function() {
     })
 
     try {
-    	doSomethingBad()
+    	throw new Error("oops") // exceptions
     } catch(e) {
     	this.ok(true) // expect an exception
     }
 
-    doSomethingAsynchronous(function(result) {
+    setTimeout(function(result) { // do something asynchronous
         this.ok(result === 'good')
-    })
+    }, 10)
 })
 
 test.writeConsole() // writes colorful output!
@@ -210,6 +210,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 4.0.3 - updating deadunit-core
 * 4.0.1 - updating deadunit-core to get support for source-code lines in-browser
 * 4.0.0 - removing totalSynchronousDuration from format, and upgrading to deadunit-core 4.0.0 (which fixes some timeout problems)
 * 3.0.1 - deadunit-core bugfix
