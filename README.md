@@ -210,7 +210,7 @@ How to submit pull requests:
 Change Log
 =========
 
-* 4.0.2- updating deadunit-core
+* 4.0.2 - updating deadunit-core
 * 4.0.1 - updating deadunit-core to get support for source-code lines in-browser
 * 4.0.0 - removing totalSynchronousDuration from format, and upgrading to deadunit-core 4.0.0 (which fixes some timeout problems)
 * 3.0.1 - deadunit-core bugfix
