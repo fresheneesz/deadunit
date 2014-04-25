@@ -179,6 +179,11 @@ Todo
 * Ability to use a sourcemap file to correct line/column numbers
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
+Known Bugs
+===========
+
+* A bug in [`fibers/future`s](https://github.com/laverdet/node-fibers#futures) can cause deadunit to fail to catch errors thrown from a fiber, which can lead to the process to crash prematurely (before printing test results). See https://github.com/laverdet/node-fibers/issues/172
+
 How to Contribute!
 ============
 
@@ -210,6 +215,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 4.0.4 - updating deadunit-core for a browser-side bug fix
 * 4.0.2 - updating deadunit-core
 * 4.0.1 - updating deadunit-core to get support for source-code lines in-browser
 * 4.0.0 - removing totalSynchronousDuration from format, and upgrading to deadunit-core 4.0.0 (which fixes some timeout problems)

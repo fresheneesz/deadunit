@@ -1,5 +1,5 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var n;"undefined"!=typeof window?n=window:"undefined"!=typeof global?n=global:"undefined"!=typeof self&&(n=self);var o=n;o=o.deadunit||(o.deadunit={}),o=o.browser||(o.browser={}),o.gen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Future = require('async-future')
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var n;"undefined"!=typeof window?n=window:"undefined"!=typeof global?n=global:"undefined"!=typeof self&&(n=self);var o=n;o=o.deadunit||(o.deadunit={}),o=o.browser||(o.browser={}),o.gen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+var Future = _dereq_('async-future')
 
 // built in test formatting helper
 module.exports = function(unitTest, printOnTheFly/*, [printLateEvents,] format*/) {
@@ -98,15 +98,15 @@ function formatGroup(testResults, format, nestingLevel) {
 }
 
 
-},{"async-future":6}],2:[function(require,module,exports){
+},{"async-future":6}],2:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
-var deadunitInternal = require("./deadunit.internal")
-var Future = require('async-future')
+var deadunitInternal = _dereq_("./deadunit.internal")
+var Future = _dereq_('async-future')
 
 module.exports = deadunitInternal({
-    deadunitCore: require('deadunit-core/deadunitCore.browser'),
+    deadunitCore: _dereq_('deadunit-core/deadunitCore.browser'),
 
     environmentSpecificMethods: function() {
         var red = 'rgb(200,30,30)'
@@ -161,7 +161,7 @@ module.exports = deadunitInternal({
     }
 })
 
-},{"./deadunit.internal":3,"async-future":6,"deadunit-core/deadunitCore.browser":14}],3:[function(require,module,exports){
+},{"./deadunit.internal":3,"async-future":6,"deadunit-core/deadunitCore.browser":14}],3:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -169,10 +169,10 @@ module.exports = function(options) {
     var exports = {}
 
     var deadunitCore = options.deadunitCore
-    var proto = require('proto')
+    var proto = _dereq_('proto')
 
-    var defaultFormats = require('./defaultFormats')
-    exports.format = require('./basicFormatter')
+    var defaultFormats = _dereq_('./defaultFormats')
+    exports.format = _dereq_('./basicFormatter')
 
     exports.error = deadunitCore.error
 
@@ -198,13 +198,13 @@ module.exports = function(options) {
 }
 
 
-},{"./basicFormatter":1,"./defaultFormats":4,"proto":21}],4:[function(require,module,exports){
-var util = require("util")
+},{"./basicFormatter":1,"./defaultFormats":4,"proto":23}],4:[function(_dereq_,module,exports){
+var util = _dereq_("util")
 
-var Future = require('async-future')
+var Future = _dereq_('async-future')
 
-var formatBasic = require("./basicFormatter")
-var indent = require("./indent")
+var formatBasic = _dereq_("./basicFormatter")
+var indent = _dereq_("./indent")
 
 // unitTest is a deadunit-core UnitTest object
 // if consoleColoring is true, the string will contain console color annotations
@@ -212,7 +212,7 @@ var indent = require("./indent")
 // returns a future containing a string with the final results
 exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, printLateEvents) {
     if(printLateEvents === undefined) printLateEvents = true
-    if(consoleColoring) require('colors')
+    if(consoleColoring) _dereq_('colors')
 
     function color(theColor, theString) {
         if(consoleColoring)
@@ -679,16 +679,16 @@ function timeText(ms) {
         return Number(ms/1000).toPrecision(3)+'s'
 }
 
-},{"./basicFormatter":1,"./indent":5,"async-future":6,"colors":13,"util":12}],5:[function(require,module,exports){
+},{"./basicFormatter":1,"./indent":5,"async-future":6,"colors":13,"util":12}],5:[function(_dereq_,module,exports){
 
 module.exports = function(i, str) {
     return i+str.split("\n")       // get all lines
               .join("\n"+i)      // join all lines with an indent
 }
-},{}],6:[function(require,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
-var trimArgs = require("trimArguments")
+var trimArgs = _dereq_("trimArguments")
 
 
 module.exports = Future
@@ -972,7 +972,7 @@ function executeCallbacks(that, callbacks) {
     }
 }
 
-},{"trimArguments":7}],7:[function(require,module,exports){
+},{"trimArguments":7}],7:[function(_dereq_,module,exports){
 // resolves varargs variable into more usable form
 // args - should be a function arguments variable
 // returns a javascript Array object of arguments that doesn't count trailing undefined values in the length
@@ -987,7 +987,7 @@ module.exports = function(theArguments) {
     args.splice(-0, count)
     return args
 }
-},{}],8:[function(require,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -1012,7 +1012,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],9:[function(require,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -1057,6 +1057,13 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 
+function noop() {}
+
+process.on = noop;
+process.once = noop;
+process.off = noop;
+process.emit = noop;
+
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
 }
@@ -1067,8 +1074,9 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],10:[function(require,module,exports){
-var process=require("__browserify_process");// Copyright Joyent, Inc. and other Node contributors.
+},{}],10:[function(_dereq_,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the
@@ -1293,15 +1301,17 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-},{"__browserify_process":9}],11:[function(require,module,exports){
+}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
+},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9}],11:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],12:[function(require,module,exports){
-var process=require("__browserify_process"),global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};// Copyright Joyent, Inc. and other Node contributors.
+},{}],12:[function(_dereq_,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the
@@ -1826,7 +1836,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = require('./support/isBuffer');
+exports.isBuffer = _dereq_('./support/isBuffer');
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -1870,7 +1880,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = require('inherits');
+exports.inherits = _dereq_('inherits');
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -1888,7 +1898,8 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":11,"__browserify_process":9,"inherits":8}],13:[function(require,module,exports){
+}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":11,"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"inherits":8}],13:[function(_dereq_,module,exports){
 /*
 colors.js
 
@@ -2107,7 +2118,7 @@ exports.addSequencer('zebra', function (letter, i, exploded) {
 exports.setTheme = function (theme) {
   if (typeof theme === 'string') {
     try {
-      exports.themes[theme] = require(theme);
+      exports.themes[theme] = _dereq_(theme);
       applyTheme(exports.themes[theme]);
       return exports.themes[theme];
     } catch (err) {
@@ -2232,13 +2243,13 @@ addProperty('zalgo', function () {
   return zalgo(this);
 });
 
-},{}],14:[function(require,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
-var deadunitCore = require("./deadunitCore")
-var Future = require('async-future')
-var stackinfo = require('stackinfo')
+var deadunitCore = _dereq_("./deadunitCore")
+var Future = _dereq_('async-future')
+var stackinfo = _dereq_('stackinfo')
 
 module.exports = deadunitCore({
     initialize: function() {},
@@ -2347,16 +2358,16 @@ function load(url) {
 
     return loadCache[url]
 }
-},{"./deadunitCore":15,"async-future":6,"stackinfo":18}],15:[function(require,module,exports){
+},{"./deadunitCore":15,"async-future":16,"stackinfo":20}],15:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
-var path = require('path')
+var path = _dereq_('path')
 
-var proto = require('proto')
-var Future = require('async-future')
+var proto = _dereq_('proto')
+var Future = _dereq_('async-future')
 
-var processResults = require('./processResults')
+var processResults = _dereq_('./processResults')
 
 // returns a module intended for a specific environment (that environment being described by the options)
 // options can contain:
@@ -2409,9 +2420,8 @@ module.exports = function(options) {
             return this
         }
 
-        this.results = function(printLateEvents) {
-            if(printLateEvents === undefined) printLateEvents = true
-            return processResults(this, printLateEvents)
+        this.results = function() {
+            return processResults(this)
         }
 
         // private
@@ -2435,7 +2445,7 @@ module.exports = function(options) {
                     fakeTest.onDoneCallbacks.push(cb)
                 }
 
-            fakeTest.mainSubTest = UnitTester.prototype.test.apply(fakeTest, args) // set so the error handler can access the real test
+            UnitTester.prototype.test.apply(fakeTest, args) // set so the error handler can access the real test
             this.mainTester = fakeTest
 
             fakeTest.groupEnded = true
@@ -2551,6 +2561,10 @@ module.exports = function(options) {
 
                 var tester = new UnitTester(name, this.mainTester)
                 tester.manager = this.manager
+
+                if(this.id === undefined) { // ie its the top-level fake test
+                    this.mainSubTest = tester
+                }
 
                 tester.onDone = function() { // will execute when this test is done
                     that.doneTests += 1
@@ -2806,9 +2820,14 @@ module.exports = function(options) {
                 var fileLines = file.split("\n")
 
                 var lines = []
-                for(var n=0; true; n++) {
-                    lines.push(fileLines[lineNumber - 1 - n].trim())
-                    var containsFunction = fileLines[lineNumber - 1 - n].indexOf(functionName) !== -1
+                for(var n=0; n<true; n++) {
+                    var line = fileLines[lineNumber - 1 - n]
+                    if(line === undefined) {
+                        break;
+                    }
+
+                    lines.push(line.trim())
+                    var containsFunction = line.indexOf(functionName) !== -1
                     if(containsFunction) {
                         return Future(lines.reverse().join('\n'))
                     }
@@ -2816,9 +2835,9 @@ module.exports = function(options) {
                         return Future("<no lines found (possibly an error?)> ")	// something went wrong if this is being returned (the functionName wasn't found above - means you didn't get the function name right)
                     }
                 }
-            } else {
-                return Future("<source not available>")
             }
+            // else
+            return Future("<source not available>")
         })
     }
 
@@ -2838,7 +2857,277 @@ module.exports = function(options) {
         test: UnitTest
     }
 }
-},{"./processResults":20,"async-future":6,"path":10,"proto":21}],16:[function(require,module,exports){
+},{"./processResults":22,"async-future":16,"path":10,"proto":23}],16:[function(_dereq_,module,exports){
+/* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
+
+var trimArgs = _dereq_("trimArguments")
+
+
+module.exports = Future
+
+Future.debug = false // switch this to true if you want ids and long stack traces
+
+var curId = 0         // for ids\
+function Future(value) {
+	if(arguments.length > 0) {
+		var f = new Future()
+        f.return(value)
+        return f
+	} else {
+        this.isResolved = false
+        this.queue = []
+        if(Future.debug) {
+            curId++
+            this.id = curId
+        }
+    }
+}
+
+// static methods
+
+// has one parameter: either a bunch of futures, or a single array of futures
+// returns a promise that resolves when one of them errors, or when all of them succeeds
+Future.all = function() {
+    if(arguments[0] instanceof Array) {
+        var futures = arguments[0]
+    } else {
+        var futures = trimArgs(arguments)
+    }
+
+    var f = new Future()
+    var results = []
+
+    if(futures.length > 0) {
+        var current = futures[0]
+        futures.forEach(function(future, index) {
+            current = current.then(function(v) {
+                results[index] = v
+                return futures[index+1]
+            })
+        })
+
+        //if
+        current.catch(function(e) {
+            f.throw(e)
+        })
+        // else
+        current.then(function() {
+            f.return(results)
+        })
+
+
+    } else {
+        f.return(results)
+    }
+
+    return f
+}
+
+// either used like futureWrap(function(){ ... })(arg1,arg2,etc) or
+//  futureWrap(object, 'methodName')(arg1,arg2,etc)
+Future.wrap = function() {
+    // function
+    if(arguments.length === 1) {
+        var fn = arguments[0]
+        var object = undefined
+
+
+    // object, function
+    } else {
+        var object = arguments[0]
+        var fn = object[arguments[1]]
+    }
+
+    return function() {
+        var args = Array.prototype.slice.call(arguments)
+        var future = new Future
+        args.push(future.resolver())
+        var me = this
+        if(object) me = object
+        fn.apply(me, args)
+        return future
+    }
+}
+
+
+// default
+var unhandledErrorHandler = function(e) {
+    setTimeout(function() { //  nextTick
+        throw e
+    },0)
+}
+
+// setup unhandled error handler
+// unhandled errors happen when done is called, and  then an exception is thrown from the future
+Future.error = function(handler) {
+    unhandledErrorHandler = handler
+}
+
+// instance methods
+
+// returns a value for the future (can only be executed once)
+// if there are callbacks waiting on this value, they are run in the next tick
+    // (ie they aren't run immediately, allowing the current thread of execution to complete)
+Future.prototype.return = function(v) {
+    resolve(this, 'return', v)
+}
+Future.prototype.throw = function(e) {
+    resolve(this, 'error', e)
+}
+
+function setNext(that, future) {
+    if(future !== undefined && !isLikeAFuture(future) )
+        throw Error("Value returned from then or catch *not* a Future: "+future)
+
+    resolve(that, 'next', future)
+}
+
+function wait(that, cb) {
+    if(that.isResolved) {
+        executeCallbacks(that, [cb])
+    } else {
+        that.queue.push(cb)
+    }
+}
+
+// duck typing to determine if something is or isn't a future
+function isLikeAFuture(x) {
+    return x.isResolved !== undefined && x.queue !== undefined && x.then !== undefined
+}
+
+function waitOnResult(f, result, cb) {
+    wait(result, function() {
+        if(this.hasError) {
+            f.throw(this.error)
+        } else if(this.hasNext) {
+            waitOnResult(f, this.next, cb)
+        } else {
+            try {
+                setNext(f, cb(this.result))
+            } catch(e) {
+                f.throw(e)
+            }
+        }
+    })
+}
+
+
+// cb takes one parameter - the value returned
+// cb can return a Future, in which case the result of that Future is passed to next-in-chain
+Future.prototype.then = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        if(this.hasError)
+            f.throw(this.error)
+        else if(this.hasNext)
+            waitOnResult(f, this.next, cb)
+        else {
+            try {
+                setNext(f, cb(this.result))
+            } catch(e) {
+                f.throw(e)
+            }
+        }
+    })
+    return f
+}
+// cb takes one parameter - the error caught
+// cb can return a Future, in which case the result of that Future is passed to next-in-chain
+Future.prototype.catch = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        if(this.hasError) {
+            try {
+                setNext(f, cb(this.error))
+            } catch(e) {
+                f.throw(e)
+            }
+        } else if(this.hasNext)
+            setNext(f, this.next)
+        else
+            f.return(this.result)
+    })
+    return f
+}
+// cb takes no parameters
+// callback's return value is ignored, but thrown exceptions propogate normally
+Future.prototype.finally = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        try {
+            cb()
+            if(this.hasError)
+                f.throw(this.error)
+            else {
+                f.return(this.result)
+            }
+        } catch(e) {
+            f.throw(e)
+        }
+    })
+    return f
+}
+
+// all unused futures should end with this (e.g. most then-chains)
+// detatches the future so any propogated exception is thrown (so the exception isn't silently lost)
+Future.prototype.done = function() {
+    wait(this, function() {
+        if(this.hasError) {
+            unhandledErrorHandler(this.error)
+        }
+    })
+}
+
+
+
+Future.prototype.resolver = function() {
+    var me = this
+
+    return function(e,v) {
+        if(e) { // error argument
+            me.throw(e)
+        } else {
+            me.return(v)
+        }
+    }
+}
+
+Future.prototype.resolved = function() {
+    return this.isResolved
+}
+
+
+function resolve(that, type, value) {
+    if(that.isResolved)
+        throw Error("Future resolved more than once! Resolution: "+value)
+
+    that.isResolved = true
+    that.hasError = type === 'error'
+    that.hasNext = type === 'next' && value !== undefined
+
+    if(that.hasError)
+        that.error = value
+    else if(that.hasNext)
+        that.next = value
+    else
+        that.result = value
+
+    executeCallbacks(that, that.queue)
+}
+
+function executeCallbacks(that, callbacks) {
+    if(callbacks.length > 0) {
+        setTimeout(function() {
+            callbacks.forEach(function(cb) {
+                cb.apply(that)
+            })
+        },0)
+    }
+}
+
+},{"trimArguments":17}],17:[function(_dereq_,module,exports){
+module.exports=_dereq_(7)
+},{}],18:[function(_dereq_,module,exports){
 
 
 module.exports = exceptionMode(createException()) // basically what browser this is
@@ -2889,7 +3178,7 @@ function createException() {
     }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 // Domain Public by Eric Wendelin http://eriwen.com/ (2008)
 //                  Luke Smith http://lucassmith.name/ (2008)
 //                  Loic Dachary <loic@dachary.org> (2008)
@@ -3352,10 +3641,10 @@ function createException() {
 
 	return printStackTrace;
 }));
-},{}],18:[function(require,module,exports){
-var printStackTrace = require('stacktrace-js')
-var parsers = require('./tracelineParser')
-var mode = require('./exceptionMode')
+},{}],20:[function(_dereq_,module,exports){
+var printStackTrace = _dereq_('stacktrace-js')
+var parsers = _dereq_('./tracelineParser')
+var mode = _dereq_('./exceptionMode')
 
 module.exports = function(ex) {
     if(parsers[mode] === undefined)
@@ -3410,16 +3699,16 @@ function parseStacktrace(trace) {
 // here because i'm lazy, they're here for testing only
 module.exports.parsers = parsers
 module.exports.mode = mode
-},{"./exceptionMode":16,"./tracelineParser":19,"stacktrace-js":17}],19:[function(require,module,exports){
+},{"./exceptionMode":18,"./tracelineParser":21,"stacktrace-js":19}],21:[function(_dereq_,module,exports){
 
 module.exports = {
     chrome: function(line) {
         var m = line.match(CHROME_STACK_LINE);
         if (m) {
-            var file = m[8] || m[15] || m[22]
-            var fn = m[4] || m[7] || m[12] || m[19]
-            var lineNumber = m[10] || m[17]
-            var column = m[11] || m[18]
+            var file = m[9] || m[17] || m[24]
+            var fn = m[4] || m[7] || m[13] || m[21]
+            var lineNumber = m[11] || m[19]
+            var column = m[12] || m[20]
         } else {
             //throw new Error("Couldn't parse exception line: "+line)
         }
@@ -3465,7 +3754,7 @@ module.exports = {
     }
 }
 
-
+"Object.module.exports.test.TabBar.buttons.callback [as click] (http://localhost:8001/git/frontend/test/allTestsFE.bundle.js:1546:9)"
 
 // The following 2 regex patterns were originally taken from google closure library: https://code.google.com/p/closure-library/source/browse/closure/goog/testing/stacktrace.js
 // RegExp pattern for JavaScript identifiers. We don't support Unicode identifiers defined in ECMAScript v3.
@@ -3479,7 +3768,7 @@ var CHROME_STACKTRACE_JS_GETSOURCE_FAILURE = STACKTRACE_JS_GETSOURCE_FAILURE+'((
 
 var CHROME_FILE_AND_LINE = URL_PATTERN_+'(:(\\d*):(\\d*))'
 var CHROME_IDENTIFIER_PATTERN = '\\<?'+IDENTIFIER_PATTERN_+'\\>?'
-var CHROME_COMPOUND_IDENTIFIER = "((new )?"+CHROME_IDENTIFIER_PATTERN+'(\\.'+CHROME_IDENTIFIER_PATTERN+')*)'
+var CHROME_COMPOUND_IDENTIFIER = "((new )?"+CHROME_IDENTIFIER_PATTERN+'(\\.'+CHROME_IDENTIFIER_PATTERN+')*)( \\[as '+IDENTIFIER_PATTERN_+'])?'
 var CHROME_UNKNOWN_IDENTIFIER = "(\\(\\?\\))"
 
 // output from stacktrace.js is: "name()@..." instead of "name (...)"
@@ -3506,8 +3795,8 @@ var IE_ANONYMOUS = '('+IE_WHITESPACE+'*({anonymous}\\(\\)))@\\('+IE_FILE_AND_LIN
 var IE_NORMAL_FUNCTION = '('+IDENTIFIER_PATTERN_+')@'+IE_FILE_AND_LINE
 var IE_FUNCTION_CALL = '('+IE_NORMAL_FUNCTION+'|'+IE_ANONYMOUS+')'+IE_WHITESPACE+'*'
 var IE_STACK_LINE = new RegExp('^'+IE_FUNCTION_CALL+'$')
-},{}],20:[function(require,module,exports){
-module.exports = function returnResults(unitTestObject, printLateEvents) {
+},{}],22:[function(_dereq_,module,exports){
+module.exports = function returnResults(unitTestObject) {
 
     var results;
     var groups = {}
@@ -3631,7 +3920,7 @@ function eachTest(test, callback, parent) {
 
     callback(test, parent)
 }
-},{}],21:[function(require,module,exports){
+},{}],23:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 

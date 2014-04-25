@@ -19,9 +19,9 @@
       "from": "colors@"
     },
     "deadunit-core": {
-      "version": "4.0.4",
-      "from": "deadunit-core@4.0.4",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.4.tgz",
+      "version": "4.0.5",
+      "from": "deadunit-core@4.0.5",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.5.tgz",
       "dependencies": {
         "async-future": {
           "version": "0.1.6",
@@ -41,10 +41,12 @@
                 "uglify-js": {
                   "version": "2.4.12",
                   "from": "uglify-js@2.4.12",
+                  "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-2.4.12.tgz",
                   "dependencies": {
                     "async": {
                       "version": "0.2.10",
-                      "from": "async@0.2.10"
+                      "from": "async@0.2.10",
+                      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
                     },
                     "source-map": {
                       "version": "0.1.31",
