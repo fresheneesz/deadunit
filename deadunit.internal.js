@@ -13,9 +13,8 @@ module.exports = function(options) {
     exports.error = deadunitCore.error
 
     exports.test = proto(deadunitCore.test, function() {
-        this.string = function(colorize) {
-            if(colorize === undefined) colorize = false
-            return defaultFormats.text(this, colorize, /*printOnTheFly=*/false, /*printLateEvents=*/false)
+        this.string = function() {
+            return defaultFormats.text(this, undefined, /*printOnTheFly=*/false, /*printLateEvents=*/false)
         }
 
         this.html = function() {

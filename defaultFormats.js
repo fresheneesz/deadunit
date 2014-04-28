@@ -9,13 +9,12 @@ var indent = require("./indent")
 // if consoleColoring is true, the string will contain console color annotations
 // if printOnTheFly is true, test results will be printed to the screen in addition to being returned
 // returns a future containing a string with the final results
-exports.text = function textOutput(unitTest, consoleColoring, printOnTheFly, printLateEvents) {
+exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, printLateEvents) {
     if(printLateEvents === undefined) printLateEvents = true
-    if(consoleColoring) require('colors')
 
     function color(theColor, theString) {
-        if(consoleColoring)
-            return theString.toString()[theColor]
+        if(consoleColors !== undefined)
+            return consoleColors[theColor](theString.toString())
         else
             return theString.toString()
     }

@@ -175,7 +175,6 @@ Todo
 
 * Test deadunit on more browsers and browser versions
 * add the ability to stream test results to a browser
-* Once `colors` supports a safe mode (where it doesn't modify the String prototype), use that. *Modifying builtins is dangerous*.
 * Ability to use a sourcemap file to correct line/column numbers
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
@@ -215,6 +214,9 @@ How to submit pull requests:
 Change Log
 =========
 
+* 4.1.0
+    * Switching to not-yet-accepted commit of `colors` that supports a safe mode (where it doesn't modify the String prototype). *Modifying builtins is dangerous*.
+    * This comes with a slight API change to deafultformats.text, where you have to pass in the colors module instead of a boolean
 * 4.0.4 - updating deadunit-core for a browser-side bug fix
 * 4.0.2 - updating deadunit-core
 * 4.0.1 - updating deadunit-core to get support for source-code lines in-browser
