@@ -693,9 +693,9 @@
       }
     },
     "deadunit-core": {
-      "version": "4.0.5",
-      "from": "deadunit-core@4.0.5",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.5.tgz",
+      "version": "4.0.6",
+      "from": "deadunit-core@4.0.6",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-4.0.6.tgz",
       "dependencies": {
         "async-future": {
           "version": "0.1.6",
@@ -719,8 +719,7 @@
                   "dependencies": {
                     "async": {
                       "version": "0.2.10",
-                      "from": "async@0.2.10",
-                      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
+                      "from": "async@0.2.10"
                     },
                     "source-map": {
                       "version": "0.1.31",
@@ -758,9 +757,9 @@
           "resolved": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.7.tgz"
         },
         "stackinfo": {
-          "version": "1.0.3",
-          "from": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.3.tgz",
-          "resolved": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.3.tgz",
+          "version": "1.0.4",
+          "from": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.4.tgz",
+          "resolved": "https://registry.npmjs.org/stackinfo/-/stackinfo-1.0.4.tgz",
           "dependencies": {
             "stacktrace-js": {
               "version": "0.6.0",

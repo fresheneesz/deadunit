@@ -214,6 +214,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 4.1.1 - updating deadunit-core for firefox stackinfo fix
 * 4.1.0
     * Switching to not-yet-accepted commit of `colors` that supports a safe mode (where it doesn't modify the String prototype). *Modifying builtins is dangerous*.
     * This comes with a slight API change to deafultformats.text, where you have to pass in the colors module instead of a boolean

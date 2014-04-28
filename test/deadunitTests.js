@@ -377,7 +377,7 @@ exports.getTests = function(Unit, options) {
                     this.count(2)
 
                     options.reset()
-                    var test = Unit.test("Testing the Unit Tester", function() {
+                    var test = Unit.test("exception format", function() {
                         throw "strings aren't exceptions yo"
                     })
 
@@ -385,7 +385,7 @@ exports.getTests = function(Unit, options) {
                         t.log(resultOutput)
 
                         t.ok(resultOutput.indexOf("strings aren't exceptions yo") !== -1)
-                        t.ok(resultOutput.indexOf("t\n") === -1) // this tests for the case where a string is printed one character per line (which is not desirable)
+                        t.ok(resultOutput.indexOf("t\n") === -1 || resultOutput.indexOf("g\n") === -1) // this tests for the case where a string is printed one character per line (which is not desirable)
                     }).done()
                 })
 
@@ -393,7 +393,7 @@ exports.getTests = function(Unit, options) {
                     this.count(3)
 
                     options.reset()
-                    var test = Unit.test("Testing the Unit Tester", function() {
+                    var test = Unit.test("custom error", function() {
                         var customError = CustomError('testCustom', {a:1, b:'two', c:[1,2,3], d:{four:4}})
                         this.log(customError)
                     })

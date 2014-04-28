@@ -48,7 +48,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
             var durationText = timeText(totalDuration)
 
-            if(nestingLevel == 0) {
+            if(nestingLevel === 0) {
                 var resultsLine = ''
 
                 if(name) resultsLine += color('cyan', name+' - ')
@@ -67,7 +67,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
                 result += '\n\n'+resultsLine
 
                 if(timedOut) {
-                    result += '\n    The test timed out'.red
+                    result += color('red', '\n    The test timed out')
                 }
             } else {
                 if(!name) name = "<unnamed test>"

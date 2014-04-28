@@ -3,6 +3,7 @@
 
 var deadunitInternal = require("./deadunit.internal")
 var defaultFormats = require('./defaultFormats')
+var color = require("colors/safe")
 
 module.exports = deadunitInternal({
     deadunitCore: require('deadunit-core/deadunitCore.node'),
@@ -10,7 +11,7 @@ module.exports = deadunitInternal({
     environmentSpecificMethods: function() {
 
         this.string = function(colorize) {
-            if(colorize === undefined) colorize = require("colors/safe")
+            if(colorize === undefined) colorize = color
             return defaultFormats.text(this, colorize, /*printOnTheFly=*/false, /*printLateEvents=*/false)
         }
 
@@ -23,8 +24,8 @@ module.exports = deadunitInternal({
 
                 if(hangingTimeout !== 0) {
                     setTimeout(function() {
-                        console.log(("Script is hanging (lasted more than "+hangingTimeout+"ms after test "
-                                    +"\""+finalResults.name+"\" finished printing)").red)
+                        console.log(color.red("Script is hanging (lasted more than "+hangingTimeout+"ms after test "
+                                    +"\""+finalResults.name+"\" finished printing)"))
                     }, hangingTimeout).unref() // note: unref is only available in node.js
                 }
             })

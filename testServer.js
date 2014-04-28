@@ -23,4 +23,6 @@ var server = http.createServer(function (request, res) {
     }
 })
 
-server.listen(8100)
+var port = 8100
+server.listen(port)
+console.log("listening on port "+port)
