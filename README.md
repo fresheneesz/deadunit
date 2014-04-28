@@ -199,7 +199,7 @@ How to submit pull requests:
 3. clone your forked repo onto your machine and run `npm install` at its root
 4. If you're gonna work on multiple separate things, its best to create a separate branch for each of them
 5. edit!
-6. If it's a code change, please add to the unit tests (at test/testDeadunit.js) to verify that your change works
+6. If it's a code change, please add to the unit tests (in the appropriate test file in the 'test/' folder) to verify that your change works
 7. When you're done, run the unit tests and ensure they all pass
    * Make sure you run `node build.js` to build the browser packages (browserPackage/deadunitCore.browser.gen.umd.js and test/deadunitTests.browser.umd.js) before running the browser tests
    * Test the following (lots of it requires visually make sure everything looks right):
