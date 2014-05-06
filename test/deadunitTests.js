@@ -3,7 +3,6 @@
 exports.getTests = function(Unit, options) {
     "use strict";
 
-
     var proto = require('proto')
     var Future = require('async-future')
 
@@ -53,9 +52,10 @@ exports.getTests = function(Unit, options) {
         print('\n'+name+"\n")
     }
 
-    var simpleSuccess, simpleFailure, simpleException, simpleExceptionNoTrace, simpleAsyncException, simpleTimeout, testGroups
 
-    Future(true) //*
+    var simpleSuccess, simpleFailure, simpleException, simpleExceptionNoTrace, simpleAsyncException, simpleTimeout, testGroups
+    //*
+    Future(true)
     .then(function() {
 
         announce("simple success")
@@ -149,6 +149,7 @@ exports.getTests = function(Unit, options) {
 
         var futuresToWaitOn = []
         testGroups = Unit.test("Testing the Unit Tester", function() {
+            this.timeout(5000)
 
             this.ok(true) // here to test to make sure these aren't being counted as tests alongside the this.tests
 
@@ -234,8 +235,18 @@ exports.getTests = function(Unit, options) {
         print(string)	// returns plain text
         return printTestOutput(testGroups, 'testGroups', 400)
 
-    })
-    .then(function() {
+    }).then(function(){
+        announce("Visually verify the following tests")
+
+        var test = Unit.test('should print late-events warning', function(t) {
+            setTimeout(function() {
+                t.ok(true)
+            },1000)
+        })
+
+        return printTestOutput(test, 'should print late-events warning')
+
+    }).then(function() {
         var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
             var formatBasic = require("../basicFormatter")
 
@@ -291,7 +302,7 @@ exports.getTests = function(Unit, options) {
                                 t.ok(testSuccesses === 3, testSuccesses)
                                 t.ok(testFailures === 2, testFailures)
                                 t.ok(testResults.length === 5, testResults.length)
-                                t.ok(exceptionResults.length === expectedExceptionResults, exceptionResults.length)
+                                t.ok(exceptionResults.length === expectedExceptionResults, exceptionResults.length, expectedExceptionResults)
 
                                 t.ok(assertSuccesses === 10, assertSuccesses)
                                 t.ok(assertFailures === 7, assertFailures)
@@ -412,9 +423,9 @@ exports.getTests = function(Unit, options) {
         console.log("")
         printTestOutput(realTest, 'realTest', 400)
 
-    })//*/
+    })
     .catch(function(e) {
         console.log(e.stack)
     }).done()
-
+    //*/
 }

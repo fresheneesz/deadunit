@@ -1,7 +1,7 @@
 var build = require('build-modules')
 
 build(__dirname+'/browserPackage/', 'deadunit.browser.gen', '/*Copyright 2014 Billy Tetrud - MIT license, free for any use*/',
-    __dirname+"/deadunit.browser.js",
+    __dirname+"/deadunit.browser.js", {},
     function(e) {
         if(e === undefined) {
         console.log('done building browser package')
@@ -12,7 +12,7 @@ build(__dirname+'/browserPackage/', 'deadunit.browser.gen', '/*Copyright 2014 Bi
 })
 
 build(__dirname+'/test/generated/', 'deadunitTests.browser', '/*Copyright 2014 Billy Tetrud - MIT license, free for any use*/',
-    __dirname+"/test/deadunitTests.js",
+    __dirname+"/test/deadunitTests.js", {debug:true},
     function(e) {
         if(e === undefined) {
         console.log('done building browser tests')

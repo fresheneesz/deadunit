@@ -64,12 +64,14 @@ npm install deadunit
 Usage
 =====
 
-Unit Tester
------------
-
 ##### node.js or [webpack](https://github.com/webpack/webpack)
 ```javascript
 var Unit = require('deadunit')
+```
+
+##### [webpack](https://github.com/webpack/webpack)
+```javascript
+var Unit = require('deadunit/deadunit.browser')
 ```
 
 ##### require.js
@@ -85,9 +87,13 @@ var Unit = deadunit.browser.gen
 </script>
 ```
 
+Main Methods
+-----------
+
 `Unit.test([<name>, ]<testFunction>)` - runs a suite of unit tests. Returns an ExtendedUnitTest object.
 
-`Unit.error(<handler>)` - see [deadunit-core](https://github.com/fresheneesz/deadunitCore#usage)
+ * `<name>` - (optional) names the test
+ * `<testFunction>` - a function that contains the asserts and sub-tests to be run. Both its only parameter and its bound `this` is given the same `UnitTester` object.
 
 `Unit.format(<unitTest>, <printOnTheFly>, <printLateEvents>, <format>)` - creates custom formatted output for test results according to the passed in `<format>`.
 
@@ -115,7 +121,22 @@ var Unit = deadunit.browser.gen
     * `format.log(values)`
     	* `values` is an array of logged values
 
-For documentation on how to write unit tests, see [deadunit-core](https://github.com/fresheneesz/deadunitCore).
+UnitTester
+----------
+
+For documentation on how to write unit tests using the following methods, see [deadunit-core](https://github.com/fresheneesz/deadunitCore).
+
+```
+this.ok(<success>, [<actualValue>, [expectedValue]])
+this.count(<number>)
+this.test([<name>, ]<testFunction>)
+this.log(<value>, <value2>, ...)
+this.timeout(<milliseconds>)
+this.before(<function>)
+this.after(<function>)
+this.error(<function>)
+this.sourcemap(<enable>)
+```
 
 ExtendedUnitTest
 ----------------
@@ -126,7 +147,7 @@ This object extends [UnitTest from deadunit-core](https://github.com/fresheneesz
 
 `test.writeHtml(<domElement>)` - writes test output to the dom element who's reference was passed to writeHtml. Returns a [future](https://github.com/fresheneesz/asyncFuture) that resolves when the console writing is complete. *See below for screenshots.*
 
-`test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. `<colorize>` should only be set to true if it will be printed to a command-line console. *See below for screenshots.*
+`test.string(<colorize>)` - returns a future that resolves to a string containing formatted test results. `<colorize>` (default false) should only be set to true if it will be printed to a command-line console. *See below for screenshots.*
 
 `test.html(<printLateEvents>)` - returns a string containing html-formatted test results. *See below for screenshots.*
   * `<printLateEvents>` - (optional - default true) if true, a warning will be printed when events come in after the results have been written.
@@ -175,7 +196,6 @@ Todo
 
 * Test deadunit on more browsers and browser versions
 * add the ability to stream test results to a browser
-* Ability to use a sourcemap file to correct line/column numbers
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
 
 Known Bugs
@@ -214,6 +234,12 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.0.0
+    * updating deadunit-core to pull in sourcemap support among other things
+    * Changing write-on-the-fly to only print out test-groups and unsuccessful asserts
+    * fixing issue where sometimes late events wouldn't print the late-event warning https://github.com/fresheneesz/deadunit/issues/16
+    * Fixing exception printing in firefox (which was omitting the exception message)
+    * Fixing exception printing in-browser so that you get one per line instead of them running together
 * 4.1.1 - updating deadunit-core for firefox stackinfo fix
 * 4.1.0
     * Switching to not-yet-accepted commit of `colors` that supports a safe mode (where it doesn't modify the String prototype). *Modifying builtins is dangerous*.

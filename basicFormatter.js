@@ -1,33 +1,83 @@
 var Future = require('async-future')
+var color = require('colors/safe')
 
 // built in test formatting helper
-module.exports = function(unitTest, printOnTheFly/*, [printLateEvents,] format*/) {
+module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
     if(arguments.length === 4) {
         var format = arguments[3]
-        var printLateEvents = true
     } else /* if(arguments.length > 4) */{
-        var printLateEvents = arguments[3]
         var format = arguments[4]
     }
 
     var result = new Future
 
+    var lastPrintWasDot = false
+    var printDot = function(dot) {
+        if(dot) {
+            process.stdout.write(color.green('.'))
+        } else if(lastPrintWasDot) {
+            process.stdout.write('\n')
+        }
+
+        lastPrintWasDot = dot
+    }
+
+    var ended = false
     var events = {
         end: function(e) {
-            var results = unitTest.results(printLateEvents)
+            ended = true
+            printDot(false)
+
+            var results = unitTest.results()
             result.return(formatGroup(results, format, 0).result)
+
+            if(format.end !== undefined)
+                format.end()
         }
     }
 
     if(printOnTheFly) {
+        var groups = {}
         events.assert = function(e) {
-            console.log(format.assert(e))
+            printDot(e.success && !ended)
+            if(e.success) {
+                groups[e.parent].testSuccesses++
+                groups[e.parent].assertSuccesses++
+            } else {
+                groups[e.parent].testFailures++
+                groups[e.parent].assertFailures++
+            }
+
+            if(!e.success || ended) {
+                console.log(format.assert(e, undefined, true))
+            }
         }
         events.exception = function(e) {
-            console.log(format.exception(e.error))
+            printDot(false)
+            groups[e.parent].exceptions++
+
+            console.log(format.exception(e.error, true))
         }
         events.log = function(e) {
-            console.log(format.log(e.values))
+            printDot(false)
+            console.log(format.log(e.values, true))
+        }
+        events.group = function(g) {
+            groups[g.id] = {parent: g.parent, name: g.name, testSuccesses: 0, testFailures: 0, assertSuccesses: 0, assertFailures: 0, exceptions: 0}
+        }
+        events.groupEnd = function(g) {
+            var parent = groups[g.id].parent
+            if(parent !== undefined) {
+                printDot(false)
+                if(groups[g.id].testFailures === 0 && groups[g.id].assertFailures === 0 && groups[g.id].exceptions === 0) {
+                    groups[parent].testSuccesses++
+                } else {
+                    groups[parent].testFailures++
+                }
+
+                console.log(format.group(groups[g.id].name, undefined, groups[g.id].testSuccesses,groups[g.id].testFailures,groups[g.id].assertSuccesses,groups[g.id].assertFailures,
+                                        groups[g.id].exceptions, [], [], 1, false, true))
+            }
         }
     }
 
@@ -54,7 +104,7 @@ function formatGroup(testResults, format, nestingLevel) {
                 assertFailures++
             }
 
-            results.push(format.assert(result, testResults.name))
+            results.push(format.assert(result, testResults.name, false))
 
         } else if(result.type === 'group') {
             var group = formatGroup(result, format, nestingLevel+1)
@@ -70,7 +120,7 @@ function formatGroup(testResults, format, nestingLevel) {
             assertFailures+= group.assertFailures
 
         } else if(result.type === 'log') {
-            results.push(format.log(result.values))
+            results.push(format.log(result.values, false))
         } else {
             throw new Error("Unknown result type: "+result.type)
         }
@@ -78,7 +128,7 @@ function formatGroup(testResults, format, nestingLevel) {
 
     var exceptionResults = []
     testResults.exceptions.forEach(function(e) {
-        exceptionResults.push(format.exception(e))
+        exceptionResults.push(format.exception(e, false))
     })
 
     exceptions+= testResults.exceptions.length
@@ -86,7 +136,7 @@ function formatGroup(testResults, format, nestingLevel) {
     var formattedGroup = format.group(testResults.name, testResults.duration,
                                       testCaseSuccesses, testCaseFailures,
                                       assertSuccesses, assertFailures, exceptions,
-                                      results, exceptionResults, nestingLevel, testResults.timeout)
+                                      results, exceptionResults, nestingLevel, testResults.timeout, false)
     return {result: formattedGroup,
             successes: testCaseSuccesses,
             failures: testCaseFailures,

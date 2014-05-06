@@ -33,6 +33,8 @@ module.exports = deadunitInternal({
 
         // writes html on the current (browser) page
         this.writeHtml = function(jqueryElement) {
+            if(jqueryElement === undefined) jqueryElement = $('body')
+
             var f = new Future, test = this, ended = false, written = new Future
             test.events({
                 end: function() {

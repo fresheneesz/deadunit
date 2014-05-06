@@ -19,11 +19,26 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
             return theString.toString()
     }
 
+    var warningHasBeenPrinted = false
+    function lateEventsWarning() {
+        if(ended && !warningHasBeenPrinted && printLateEvents) {
+            warningHasBeenPrinted = true
+
+            return color('red',
+                'Test results were accessed before asynchronous parts of tests were fully complete'
+                +" If you have tests with asynchronous parts, make sure to use `this.count` to declare how many assertions you're waiting for."
+            )+'\n\n'
+        } else {
+            return ''
+        }
+    }
+
+
     var ended = false
-    return formatBasic(unitTest, printOnTheFly, printLateEvents, {
+    return formatBasic(unitTest, printOnTheFly, undefined, {
         group: function(name, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
-                              testResults, exceptionResults, nestingLevel, timedOut) {
+                              testResults, exceptionResults, nestingLevel, timedOut, onTheFly) {
 
             var total = testSuccesses+testFailures
 
@@ -80,7 +95,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
             return lateEventsWarning()+result
         },
-        assert: function(result, test) {
+        assert: function(result, test, onTheFly) {
             if(result.success) {
                 var word = "Ok!  ";
                 var c = 'green'
@@ -114,11 +129,11 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
                         +color(c, linesDisplay)
                         +expectations
         },
-        exception: function(e) {
+        exception: function(e, onTheFly) {
             return lateEventsWarning()+color('red', 'Exception: ')
-                        +color('magenta', valueToString(e))
+                        +color('magenta', errorToString(e))
         },
-        log: function(values) {
+        log: function(values, onTheFly) {
             return lateEventsWarning()+values.map(function(v) {
                 return valueToString(v)
             }).join(', ')
@@ -127,27 +142,29 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
             ended = true
         }
     })
-
-    var warningHasBeenPrinted = false
-    function lateEventsWarning() {
-        if(ended && !warningHasBeenPrinted && !printLateEvents) {
-            return color('red',
-                'Test results were accessed before asynchronous parts of tests were fully complete'
-                +" If you have tests with asynchronous parts, make sure to use `this.count` to declare how many assertions you're waiting for."
-            )+'\n\n'
-
-            warningHasBeenPrinted = true
-        } else {
-            return ''
-        }
-    }
 }
 
 function valueToMessage(value) {
     if(value instanceof Error) {
-        return value.stack
+        return errorToString(value)
     } else {
         return util.inspect(value)
+    }
+}
+
+function errorToString(err) {
+    if(err instanceof Error) {
+        if(err.stack !== undefined) {
+            if(err.stack.indexOf(err.message) !== -1) { // chrome
+                return err.stack
+            } else { // firefox (others?)
+                return err.message+'\n'+err.stack
+            }
+        } else {
+            return err.toString()
+        }
+    } else {
+        return err
     }
 }
 
@@ -348,14 +365,8 @@ exports.html = function(unitTest, printLateEvents) {
             +"</div>"
         },
         exception: function(exception) {
-            if(exception.stack !== undefined) {
-                var displayError = exception.stack
-            } else {
-                var displayError = exception
-            }
-
-            var formattedException = textToHtml(displayError)
-            return '<span style="color:'+purple+';">Exception: '+formattedException+'</span>'
+            var formattedException = textToHtml(errorToString(exception))
+            return '<div style="color:'+purple+';">Exception: '+formattedException+'</div>'
         },
         log: function(values) {
             return '<div>'
