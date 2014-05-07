@@ -35,7 +35,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
 
     var ended = false
-    return formatBasic(unitTest, printOnTheFly, undefined, {
+    return formatBasic(unitTest, printOnTheFly, consoleColors, {
         group: function(name, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel, timedOut, onTheFly) {
@@ -154,14 +154,26 @@ function valueToMessage(value) {
 
 function errorToString(err) {
     if(err instanceof Error) {
+        var otherProperties = []
+        for(var n in err) {
+            if(Object.hasOwnProperty.call(err, n) && n !== 'message' && n !== 'stack') {
+                otherProperties.push(valueToString(err[n]))
+            }
+        }
+
+        var properties = ''
+        if(otherProperties.length > 0)
+            properties = '\n'+otherProperties.join("\n")
+
+
         if(err.stack !== undefined) {
             if(err.stack.indexOf(err.message) !== -1) { // chrome
-                return err.stack
+                return err.stack+properties
             } else { // firefox (others?)
-                return err.message+'\n'+err.stack
+                return err.message+'\n'+err.stack+properties
             }
         } else {
-            return err.toString()
+            return err.toString()+properties
         }
     } else {
         return err
@@ -170,17 +182,7 @@ function errorToString(err) {
 
 function valueToString(v) {
     if(v instanceof Error) {
-        var otherProperties = []
-        for(var n in v) {
-            if(Object.hasOwnProperty.call(v, n) && n !== 'message' && n !== 'stack') {
-                otherProperties.push(valueToString(v[n]))
-            }
-        }
-
-        if(otherProperties.length > 0)
-            return v.stack +'\n'+otherProperties.join("\n")
-        else
-            return v.stack
+        return errorToString(v)
 
     } else if(typeof(v) === 'string') {
         return v
@@ -224,7 +226,7 @@ exports.html = function(unitTest, printLateEvents) {
     var gray = 'rgb(185, 180, 180)'
 
 
-    var formattedTestHtml = formatBasic(unitTest, false, 0, printLateEvents, {
+    var formattedTestHtml = formatBasic(unitTest, false, {
         group: function(name, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
                           testResults, exceptionResults, nestingLevel, timedOut) {

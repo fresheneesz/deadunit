@@ -194,6 +194,7 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
+* remove colors from code the browser accesses (again) and consider moving to webpack for your bundle generation
 * Test deadunit on more browsers and browser versions
 * add the ability to stream test results to a browser
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
@@ -234,6 +235,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.0.1 - updating deadunit-core to pull in a sourcemap fix
 * 5.0.0
     * updating deadunit-core to pull in sourcemap support among other things
     * Changing write-on-the-fly to only print out test-groups and unsuccessful asserts

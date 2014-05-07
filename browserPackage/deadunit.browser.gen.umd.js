@@ -1,14 +1,19 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var n;"undefined"!=typeof window?n=window:"undefined"!=typeof global?n=global:"undefined"!=typeof self&&(n=self);var o=n;o=o.deadunit||(o.deadunit={}),o=o.browser||(o.browser={}),o.gen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (process){
 var Future = _dereq_('async-future')
-var color = _dereq_('colors/safe')
 
 // built in test formatting helper
-module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
-    if(arguments.length === 4) {
+module.exports = function(unitTest, printOnTheFly/*, [consoleColors,] format*/) {
+    if(arguments.length === 3) {
+        var format = arguments[2]
+    } else /* if(arguments.length > 3) */{
+        var color = arguments[2]
         var format = arguments[3]
-    } else /* if(arguments.length > 4) */{
-        var format = arguments[4]
+    }
+
+    var dotText = '.'
+    if(color !== undefined) {
+        dotText = color.green('.')
     }
 
     var result = new Future
@@ -16,7 +21,7 @@ module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
     var lastPrintWasDot = false
     var printDot = function(dot) {
         if(dot) {
-            process.stdout.write(color.green('.'))
+            process.stdout.write(dotText)
         } else if(lastPrintWasDot) {
             process.stdout.write('\n')
         }
@@ -28,7 +33,7 @@ module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
     var events = {
         end: function(e) {
             ended = true
-            printDot(false)
+            if(printOnTheFly) printDot(false)
 
             var results = unitTest.results()
             result.return(formatGroup(results, format, 0).result)
@@ -150,7 +155,7 @@ function formatGroup(testResults, format, nestingLevel) {
 
 
 }).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
-},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"async-future":6,"colors/safe":18}],2:[function(_dereq_,module,exports){
+},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"async-future":6}],2:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -215,7 +220,7 @@ module.exports = deadunitInternal({
     }
 })
 
-},{"./deadunit.internal":3,"async-future":6,"deadunit-core/deadunitCore.browser":19}],3:[function(_dereq_,module,exports){
+},{"./deadunit.internal":3,"async-future":6,"deadunit-core/deadunitCore.browser":18}],3:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -289,7 +294,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
 
     var ended = false
-    return formatBasic(unitTest, printOnTheFly, undefined, {
+    return formatBasic(unitTest, printOnTheFly, consoleColors, {
         group: function(name, totalDuration, testSuccesses, testFailures,
                               assertSuccesses, assertFailures, exceptions,
                               testResults, exceptionResults, nestingLevel, timedOut, onTheFly) {
@@ -408,14 +413,26 @@ function valueToMessage(value) {
 
 function errorToString(err) {
     if(err instanceof Error) {
+        var otherProperties = []
+        for(var n in err) {
+            if(Object.hasOwnProperty.call(err, n) && n !== 'message' && n !== 'stack') {
+                otherProperties.push(valueToString(err[n]))
+            }
+        }
+
+        var properties = ''
+        if(otherProperties.length > 0)
+            properties = '\n'+otherProperties.join("\n")
+
+
         if(err.stack !== undefined) {
             if(err.stack.indexOf(err.message) !== -1) { // chrome
-                return err.stack
+                return err.stack+properties
             } else { // firefox (others?)
-                return err.message+'\n'+err.stack
+                return err.message+'\n'+err.stack+properties
             }
         } else {
-            return err.toString()
+            return err.toString()+properties
         }
     } else {
         return err
@@ -424,17 +441,7 @@ function errorToString(err) {
 
 function valueToString(v) {
     if(v instanceof Error) {
-        var otherProperties = []
-        for(var n in v) {
-            if(Object.hasOwnProperty.call(v, n) && n !== 'message' && n !== 'stack') {
-                otherProperties.push(valueToString(v[n]))
-            }
-        }
-
-        if(otherProperties.length > 0)
-            return v.stack +'\n'+otherProperties.join("\n")
-        else
-            return v.stack
+        return errorToString(v)
 
     } else if(typeof(v) === 'string') {
         return v
@@ -478,7 +485,7 @@ exports.html = function(unitTest, printLateEvents) {
     var gray = 'rgb(185, 180, 180)'
 
 
-    var formattedTestHtml = formatBasic(unitTest, false, 0, printLateEvents, {
+    var formattedTestHtml = formatBasic(unitTest, false, {
         group: function(name, totalDuration, testSuccesses, testFailures,
                           assertSuccesses, assertFailures, exceptions,
                           testResults, exceptionResults, nestingLevel, timedOut) {
@@ -3375,301 +3382,6 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":16,"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"inherits":8}],18:[function(_dereq_,module,exports){
-var isHeadless = false;
-
-if (typeof module !== 'undefined') {
-  isHeadless = true;
-}
-
-if (!isHeadless) {
-  var exports = {};
-  var module = {};
-  var colors = exports;
-  exports.mode = "browser";
-} else {
-  exports.mode = "console";
-}
-
-//
-// Prototypes the string object to have additional method calls that add terminal colors
-//
-var addProperty = function (color, func) {
-  exports[color] = function (str) {
-    return func.apply(str);
-  };
-};
-
-function stylize(str, style) {
-
-  var styles;
-
-  if (exports.mode === 'console') {
-    styles = {
-      //styles
-      'bold'      : ['\x1B[1m',  '\x1B[22m'],
-      'italic'    : ['\x1B[3m',  '\x1B[23m'],
-      'underline' : ['\x1B[4m',  '\x1B[24m'],
-      'inverse'   : ['\x1B[7m',  '\x1B[27m'],
-      'strikethrough' : ['\x1B[9m',  '\x1B[29m'],
-      //text colors
-      //grayscale
-      'white'     : ['\x1B[37m', '\x1B[39m'],
-      'grey'      : ['\x1B[90m', '\x1B[39m'],
-      'black'     : ['\x1B[30m', '\x1B[39m'],
-      //colors
-      'blue'      : ['\x1B[34m', '\x1B[39m'],
-      'cyan'      : ['\x1B[36m', '\x1B[39m'],
-      'green'     : ['\x1B[32m', '\x1B[39m'],
-      'magenta'   : ['\x1B[35m', '\x1B[39m'],
-      'red'       : ['\x1B[31m', '\x1B[39m'],
-      'yellow'    : ['\x1B[33m', '\x1B[39m'],
-      //background colors
-      //grayscale
-      'whiteBG'     : ['\x1B[47m', '\x1B[49m'],
-      'greyBG'      : ['\x1B[49;5;8m', '\x1B[49m'],
-      'blackBG'     : ['\x1B[40m', '\x1B[49m'],
-      //colors
-      'blueBG'      : ['\x1B[44m', '\x1B[49m'],
-      'cyanBG'      : ['\x1B[46m', '\x1B[49m'],
-      'greenBG'     : ['\x1B[42m', '\x1B[49m'],
-      'magentaBG'   : ['\x1B[45m', '\x1B[49m'],
-      'redBG'       : ['\x1B[41m', '\x1B[49m'],
-      'yellowBG'    : ['\x1B[43m', '\x1B[49m']
-    };
-  } else if (exports.mode === 'browser') {
-    styles = {
-      //styles
-      'bold'      : ['<b>',  '</b>'],
-      'italic'    : ['<i>',  '</i>'],
-      'underline' : ['<u>',  '</u>'],
-      'inverse'   : ['<span style="background-color:black;color:white;">',  '</span>'],
-      'strikethrough' : ['<del>',  '</del>'],
-      //text colors
-      //grayscale
-      'white'     : ['<span style="color:white;">',   '</span>'],
-      'grey'      : ['<span style="color:gray;">',    '</span>'],
-      'black'     : ['<span style="color:black;">',   '</span>'],
-      //colors
-      'blue'      : ['<span style="color:blue;">',    '</span>'],
-      'cyan'      : ['<span style="color:cyan;">',    '</span>'],
-      'green'     : ['<span style="color:green;">',   '</span>'],
-      'magenta'   : ['<span style="color:magenta;">', '</span>'],
-      'red'       : ['<span style="color:red;">',     '</span>'],
-      'yellow'    : ['<span style="color:yellow;">',  '</span>'],
-      //background colors
-      //grayscale
-      'whiteBG'     : ['<span style="background-color:white;">',   '</span>'],
-      'greyBG'      : ['<span style="background-color:gray;">',    '</span>'],
-      'blackBG'     : ['<span style="background-color:black;">',   '</span>'],
-      //colors
-      'blueBG'      : ['<span style="background-color:blue;">',    '</span>'],
-      'cyanBG'      : ['<span style="background-color:cyan;">',    '</span>'],
-      'greenBG'     : ['<span style="background-color:green;">',   '</span>'],
-      'magentaBG'   : ['<span style="background-color:magenta;">', '</span>'],
-      'redBG'       : ['<span style="background-color:red;">',     '</span>'],
-      'yellowBG'    : ['<span style="background-color:yellow;">',  '</span>']
-    };
-  } else if (exports.mode === 'none') {
-    return str + '';
-  } else {
-    console.log('unsupported mode, try "browser", "console" or "none"');
-  }
-  return styles[style][0] + str + styles[style][1];
-}
-
-function applyTheme(theme) {
-
-  Object.keys(theme).forEach(function (prop) {
-      if (typeof(theme[prop]) === 'string') {
-        addProperty(prop, function () {
-          return exports[theme[prop]](this);
-        });
-      }
-      else {
-        addProperty(prop, function () {
-          var ret = this;
-          for (var t = 0; t < theme[prop].length; t++) {
-            ret = exports[theme[prop][t]](ret);
-          }
-          return ret;
-        });
-      }
-  });
-}
-
-
-//
-// Iterate through all default styles and colors
-//
-var x = ['bold', 'underline', 'strikethrough', 'italic', 'inverse', 'grey', 'black', 'yellow', 'red', 'green', 'blue', 'white', 'cyan', 'magenta', 'greyBG', 'blackBG', 'yellowBG', 'redBG', 'greenBG', 'blueBG', 'whiteBG', 'cyanBG', 'magentaBG'];
-x.forEach(function (style) {
-
-  // __defineGetter__ at the least works in more browsers
-  // http://robertnyman.com/javascript/javascript-getters-setters.html
-  // Object.defineProperty only works in Chrome
-  addProperty(style, function () {
-    return stylize(this, style);
-  });
-});
-
-function sequencer(map) {
-  return function () {
-    if (!isHeadless) {
-      return this.replace(/( )/, '$1');
-    }
-    var exploded = this.split(""), i = 0;
-    exploded = exploded.map(map);
-    return exploded.join("");
-  };
-}
-
-var rainbowMap = (function () {
-  var rainbowColors = ['red', 'yellow', 'green', 'blue', 'magenta']; //RoY G BiV
-  return function (letter, i, exploded) {
-    if (letter === " ") {
-      return letter;
-    } else {
-      return stylize(letter, rainbowColors[i++ % rainbowColors.length]);
-    }
-  };
-})();
-
-exports.themes = {};
-
-exports.addSequencer = function (name, map) {
-  addProperty(name, sequencer(map));
-};
-
-exports.addSequencer('rainbow', rainbowMap);
-exports.addSequencer('zebra', function (letter, i, exploded) {
-  return i % 2 === 0 ? letter : letter.inverse;
-});
-
-exports.setTheme = function (theme) {
-  if (typeof theme === 'string') {
-    exports.themes[theme] = _dereq_(theme);
-    applyTheme(exports.themes[theme]);
-    return exports.themes[theme];
-  } else {
-    applyTheme(theme);
-  }
-};
-
-
-addProperty('stripColors', function () {
-  return ("" + this).replace(/\x1B\[\d+m/g, '');
-});
-
-// please no
-function zalgo(text, options) {
-  var soul = {
-    "up" : [
-      '̍', '̎', '̄', '̅',
-      '̿', '̑', '̆', '̐',
-      '͒', '͗', '͑', '̇',
-      '̈', '̊', '͂', '̓',
-      '̈', '͊', '͋', '͌',
-      '̃', '̂', '̌', '͐',
-      '̀', '́', '̋', '̏',
-      '̒', '̓', '̔', '̽',
-      '̉', 'ͣ', 'ͤ', 'ͥ',
-      'ͦ', 'ͧ', 'ͨ', 'ͩ',
-      'ͪ', 'ͫ', 'ͬ', 'ͭ',
-      'ͮ', 'ͯ', '̾', '͛',
-      '͆', '̚'
-    ],
-    "down" : [
-      '̖', '̗', '̘', '̙',
-      '̜', '̝', '̞', '̟',
-      '̠', '̤', '̥', '̦',
-      '̩', '̪', '̫', '̬',
-      '̭', '̮', '̯', '̰',
-      '̱', '̲', '̳', '̹',
-      '̺', '̻', '̼', 'ͅ',
-      '͇', '͈', '͉', '͍',
-      '͎', '͓', '͔', '͕',
-      '͖', '͙', '͚', '̣'
-    ],
-    "mid" : [
-      '̕', '̛', '̀', '́',
-      '͘', '̡', '̢', '̧',
-      '̨', '̴', '̵', '̶',
-      '͜', '͝', '͞',
-      '͟', '͠', '͢', '̸',
-      '̷', '͡', ' ҉'
-    ]
-  },
-  all = [].concat(soul.up, soul.down, soul.mid),
-  zalgo = {};
-
-  function randomNumber(range) {
-    var r = Math.floor(Math.random() * range);
-    return r;
-  }
-
-  function is_char(character) {
-    var bool = false;
-    all.filter(function (i) {
-      bool = (i === character);
-    });
-    return bool;
-  }
-
-  function heComes(text, options) {
-    var result = '', counts, l;
-    options = options || {};
-    options["up"] = options["up"] || true;
-    options["mid"] = options["mid"] || true;
-    options["down"] = options["down"] || true;
-    options["size"] = options["size"] || "maxi";
-    text = text.split('');
-    for (l in text) {
-      if (is_char(l)) {
-        continue;
-      }
-      result = result + text[l];
-      counts = {"up" : 0, "down" : 0, "mid" : 0};
-      switch (options.size) {
-      case 'mini':
-        counts.up = randomNumber(8);
-        counts.min = randomNumber(2);
-        counts.down = randomNumber(8);
-        break;
-      case 'maxi':
-        counts.up = randomNumber(16) + 3;
-        counts.min = randomNumber(4) + 1;
-        counts.down = randomNumber(64) + 3;
-        break;
-      default:
-        counts.up = randomNumber(8) + 1;
-        counts.mid = randomNumber(6) / 2;
-        counts.down = randomNumber(8) + 1;
-        break;
-      }
-
-      var arr = ["up", "mid", "down"];
-      for (var d in arr) {
-        var index = arr[d];
-        for (var i = 0 ; i <= counts[index]; i++) {
-          if (options[index]) {
-            result = result + soul[index][randomNumber(soul[index].length)];
-          }
-        }
-      }
-    }
-    return result;
-  }
-  return heComes(text);
-}
-
-
-// don't summon zalgo
-addProperty('zalgo', function () {
-  return zalgo(this);
-});
-
-exports.transforms = x.concat(['rainbow', 'zebra', 'stripColors','zalgo'])
-},{}],19:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -3681,7 +3393,7 @@ var ajax = _dereq_("ajax")
 var resolveSourceMap = Future.wrap(_dereq_('source-map-resolve').resolveSourceMap)
 
 var deadunitCore = _dereq_("./deadunitCore")
-
+var isRelative = _dereq_('./isRelative')
 
 ajax.setSynchronous(true) // todo: REMOVE THIS once this chrome bug is fixed in a public release: https://code.google.com/p/chromium/issues/detail?id=368444
 
@@ -3717,11 +3429,6 @@ function readFile(url, callback) {
     }).catch(callback).done()
 }
 
-function isRelative(p) {
-    var normal = path.normalize(p);
-    var absolute = path.resolve(p);
-    return normal != absolute;
-}
 
 module.exports = deadunitCore({
     initialize: function() {},
@@ -3828,7 +3535,7 @@ module.exports = deadunitCore({
         return stackinfo(e)
     }
 })
-},{"./deadunitCore":20,"ajax":21,"async-future":6,"path":10,"source-map-resolve":24,"stackinfo":37}],20:[function(_dereq_,module,exports){
+},{"./deadunitCore":19,"./isRelative":20,"ajax":21,"async-future":6,"path":10,"source-map-resolve":24,"stackinfo":37}],19:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -3840,6 +3547,7 @@ var Future = _dereq_('async-future')
 var SourceMapConsumer = _dereq_('source-map').SourceMapConsumer
 
 var processResults = _dereq_('./processResults')
+var isRelative = _dereq_('./isRelative')
 
 // returns a module intended for a specific environment (that environment being described by the options)
 // options can contain:
@@ -4196,9 +3904,9 @@ module.exports = function(options) {
                 this.doneAsserts += 1
                 afterWaitingEmitIsComplete(this, assert(this, success, actualValue, expectedValue, 'assert', "ok")).done()
             },
-            equal: function(expectedValue, testValue) {
+            eq: function(expectedValue, testValue) {
                 this.doneAsserts += 1
-                afterWaitingEmitIsComplete(this, assert(this, expectedValue === testValue, testValue, expectedValue, 'assert', "equal")).done()
+                afterWaitingEmitIsComplete(this, assert(this, expectedValue === testValue, testValue, expectedValue, 'assert', "eq")).done()
             },
             count: function(number) {
                 if(this.countExpected !== undefined)
@@ -4395,7 +4103,19 @@ module.exports = function(options) {
         var fn = sourceMapInfo.name
 
         if(sourceMapInfo.source !== null) {
-            var file = Url.resolve(originalFilePath, path.basename(sourceMapInfo.source))
+            var relative = isRelative(sourceMapInfo.source)
+
+            if(sourceMapConsumer.sourceRoot !== null) {
+                sourceMapInfo.source = sourceMapInfo.source.replace(sourceMapConsumer.sourceRoot, '') // remove sourceRoot (todo: quesion: is this the right thing to do? See https://github.com/webpack/webpack/issues/238)
+            }
+
+            if(relative) {
+                var file = Url.resolve(originalFilePath, path.basename(sourceMapInfo.source))
+            } else {
+                var file = sourceMapInfo.source
+            }
+
+
             var originalFile = true
         } else {
             var file = originalFilePath
@@ -4645,7 +4365,15 @@ function newError(message, ErrorPrototype) {
         return e
     }
 }
-},{"./processResults":39,"async-future":6,"path":10,"proto":40,"source-map":25,"url":15}],21:[function(_dereq_,module,exports){
+},{"./isRelative":20,"./processResults":39,"async-future":6,"path":10,"proto":40,"source-map":25,"url":15}],20:[function(_dereq_,module,exports){
+var path = _dereq_('path')
+
+module.exports = function isRelative(p) {
+    var normal = path.normalize(p)
+    var absolute = path.resolve(p)
+    return normal != absolute && p.indexOf('://') === -1// second part for urls
+}
+},{"path":10}],21:[function(_dereq_,module,exports){
 var Future = _dereq_("async-future")
 
 // returns the XHR function or equivalent for use with ajax

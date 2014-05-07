@@ -159,7 +159,7 @@ exports.getTests = function(Unit, options) {
                 })
                 this.test("shouldFail", function() {
                     this.ok(5 === 3, 'actual', 'expected')
-                    this.equal(true, false)
+                    this.eq(true, false)
                     this.log("test log")
                     this.count(2)
                 })
@@ -183,7 +183,7 @@ exports.getTests = function(Unit, options) {
             })
             this.test("SuccessfulTestGroup", function() {
                 this.test("yay", function() {
-                    this.equal(true, true)
+                    this.eq(true, true)
                 })
             })
 
@@ -241,14 +241,21 @@ exports.getTests = function(Unit, options) {
         var test = Unit.test('should print late-events warning', function(t) {
             setTimeout(function() {
                 t.ok(true)
-            },1000)
+            },500)
         })
 
-        return printTestOutput(test, 'should print late-events warning')
+        return printTestOutput(test, 'should print late-events warning').then(function(){
+            var f = new Future
+            setTimeout(function() { // give the late event warning time to print cleanly (without being mucked up by the next text
+                f.return()
+            },800)
+            return f
+        })
 
     }).then(function() {
         var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
             var formatBasic = require("../basicFormatter")
+            this.timeout(5000)
 
             this.test("simple exception", function(t) {
                 var simpleException2 = Unit.test(function() {
@@ -256,7 +263,7 @@ exports.getTests = function(Unit, options) {
                 })
 
                 this.count(10)
-                formatBasic(simpleException2, false, 0, {
+                formatBasic(simpleException2, false, {
                     group: function(name, totalDuration, testSuccesses, testFailures,
                                           assertSuccesses, assertFailures, exceptions,
                                           testResults, exceptionResults, nestingLevel) {
@@ -285,7 +292,7 @@ exports.getTests = function(Unit, options) {
 
             this.test("formatBasic", function(t) {
                 this.count(4)
-                formatBasic(testGroups, false, 0, {
+                formatBasic(testGroups, false, {
                     group: function(name, totalDuration, testSuccesses, testFailures,
                                           assertSuccesses, assertFailures, exceptions,
                                           testResults, exceptionResults, nestingLevel) {

@@ -1,12 +1,17 @@
 var Future = require('async-future')
-var color = require('colors/safe')
 
 // built in test formatting helper
-module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
-    if(arguments.length === 4) {
+module.exports = function(unitTest, printOnTheFly/*, [consoleColors,] format*/) {
+    if(arguments.length === 3) {
+        var format = arguments[2]
+    } else /* if(arguments.length > 3) */{
+        var color = arguments[2]
         var format = arguments[3]
-    } else /* if(arguments.length > 4) */{
-        var format = arguments[4]
+    }
+
+    var dotText = '.'
+    if(color !== undefined) {
+        dotText = color.green('.')
     }
 
     var result = new Future
@@ -14,7 +19,7 @@ module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
     var lastPrintWasDot = false
     var printDot = function(dot) {
         if(dot) {
-            process.stdout.write(color.green('.'))
+            process.stdout.write(dotText)
         } else if(lastPrintWasDot) {
             process.stdout.write('\n')
         }
@@ -26,7 +31,7 @@ module.exports = function(unitTest, printOnTheFly/*, [DEPRECATED,] format*/) {
     var events = {
         end: function(e) {
             ended = true
-            printDot(false)
+            if(printOnTheFly) printDot(false)
 
             var results = unitTest.results()
             result.return(formatGroup(results, format, 0).result)
