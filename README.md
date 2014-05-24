@@ -235,6 +235,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.0.3 - pulling new version of core for a couple things including a huge performance improvement
 * 5.0.2 - pulling new version of core to fix annoying bug where eq's expected and got are backwards
 * 5.0.1 - updating deadunit-core to pull in a sourcemap fix
 * 5.0.0

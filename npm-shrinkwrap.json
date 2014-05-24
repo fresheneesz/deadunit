@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "dependencies": {
     "async-future": {
       "version": "0.1.18",
@@ -20,10 +20,22 @@
       "resolved": "https://github.com/fresheneesz/colors.js/archive/e990804d7c301765409770582c6aa6d562a23198.tar.gz"
     },
     "deadunit-core": {
-      "version": "5.0.2",
-      "from": "deadunit-core@5.0.2",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.2.tgz",
+      "version": "5.0.3",
+      "from": "deadunit-core@5.0.3",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.3.tgz",
       "dependencies": {
+        "async-future": {
+          "version": "1.0.0",
+          "from": "https://registry.npmjs.org/async-future/-/async-future-1.0.0.tgz",
+          "resolved": "https://registry.npmjs.org/async-future/-/async-future-1.0.0.tgz",
+          "dependencies": {
+            "trimArguments": {
+              "version": "1.0.0",
+              "from": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz",
+              "resolved": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz"
+            }
+          }
+        },
         "stack-trace": {
           "version": "0.0.7",
           "from": "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.7.tgz",
@@ -52,9 +64,9 @@
               "resolved": "https://registry.npmjs.org/source-map-url/-/source-map-url-0.2.0.tgz"
             },
             "atob": {
-              "version": "1.1.0",
-              "from": "atob@1.1.0",
-              "resolved": "https://registry.npmjs.org/atob/-/atob-1.1.0.tgz"
+              "version": "1.1.2",
+              "from": "https://registry.npmjs.org/atob/-/atob-1.1.2.tgz",
+              "resolved": "https://registry.npmjs.org/atob/-/atob-1.1.2.tgz"
             },
             "urix": {
               "version": "0.1.0",
@@ -81,7 +93,21 @@
         "ajax": {
           "version": "1.0.2",
           "from": "https://github.com/fresheneesz/ajax/archive/c0f12d10544a247bfa58b15e9535ee2ffd5787d1.tar.gz",
-          "resolved": "https://github.com/fresheneesz/ajax/archive/c0f12d10544a247bfa58b15e9535ee2ffd5787d1.tar.gz"
+          "resolved": "https://github.com/fresheneesz/ajax/archive/c0f12d10544a247bfa58b15e9535ee2ffd5787d1.tar.gz",
+          "dependencies": {
+            "async-future": {
+              "version": "0.1.18",
+              "from": "https://registry.npmjs.org/async-future/-/async-future-0.1.18.tgz",
+              "resolved": "https://registry.npmjs.org/async-future/-/async-future-0.1.18.tgz",
+              "dependencies": {
+                "trimArguments": {
+                  "version": "1.0.0",
+                  "from": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz",
+                  "resolved": "https://github.com/fresheneesz/trimArguments/archive/e69ed3ebdfe6cf055916ba6e3a1e4b28f696da6f.tar.gz"
+                }
+              }
+            }
+          }
         }
       }
     },
