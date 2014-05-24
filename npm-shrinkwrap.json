@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "dependencies": {
     "async-future": {
       "version": "0.1.18",
@@ -20,9 +20,9 @@
       "resolved": "https://github.com/fresheneesz/colors.js/archive/e990804d7c301765409770582c6aa6d562a23198.tar.gz"
     },
     "deadunit-core": {
-      "version": "5.0.1",
-      "from": "deadunit-core@5.0.1",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.1.tgz",
+      "version": "5.0.2",
+      "from": "deadunit-core@5.0.2",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.2.tgz",
       "dependencies": {
         "stack-trace": {
           "version": "0.0.7",
@@ -53,7 +53,8 @@
             },
             "atob": {
               "version": "1.1.0",
-              "from": "atob@1.1.0"
+              "from": "atob@1.1.0",
+              "resolved": "https://registry.npmjs.org/atob/-/atob-1.1.0.tgz"
             },
             "urix": {
               "version": "0.1.0",
