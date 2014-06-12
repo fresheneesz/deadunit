@@ -52,6 +52,7 @@ var test = Unit.test('some test name', function() {
 
 test.writeConsole() // writes colorful output!
 test.html()         // returns pretty html!
+test.writeHtml(document.body) // writes pretty html to the current page (if you're testing in a browser)!
 ```
 
 Install
