@@ -37,7 +37,7 @@
             var f = new Future
             test.events({
                 end: function() {
-                    test.writeHtml($('body')).then(function() {
+                    test.writeHtml().then(function() {
                         f.return()
                     })
                 }

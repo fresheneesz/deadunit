@@ -129,6 +129,7 @@ For documentation on how to write unit tests using the following methods, see [d
 
 ```
 this.ok(<success>, [<actualValue>, [expectedValue]])
+this.ok(<actualValue>, <expectedValue>)
 this.count(<number>)
 this.test([<name>, ]<testFunction>)
 this.log(<value>, <value2>, ...)
@@ -196,6 +197,7 @@ Todo
 ====
 
 * remove colors from code the browser accesses (again) and consider moving to webpack for your bundle generation
+* remove dependency on jquery
 * Test deadunit on more browsers and browser versions
 * add the ability to stream test results to a browser
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
@@ -236,6 +238,9 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.0
+    * changing writeHtml to take a dom node instead of a jquery node
+    * pulling in new deadunit version to fix a memory leak and to fix firefox stacktrace parsing for their new format (that includes the column number now)
 * 5.0.3 - pulling new version of core for a couple things including a huge performance improvement
 * 5.0.2 - pulling new version of core to fix annoying bug where eq's expected and got are backwards
 * 5.0.1 - updating deadunit-core to pull in a sourcemap fix

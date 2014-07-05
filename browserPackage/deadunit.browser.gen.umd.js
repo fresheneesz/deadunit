@@ -169,49 +169,45 @@ module.exports = deadunitInternal({
         var red = 'rgb(200,30,30)'
 
         var warningWritten = false
-        function warnAboutLateEvents(jqueryElement) {
+        function warnAboutLateEvents(domNode) {
             if(!warningWritten) {
-                jqueryElement.append(
-                    '<div style="color:'+red+'">Test results were accessed before asynchronous parts of tests were fully complete.</div>'
-                )
+                append(domNode, "Test results were accessed before asynchronous parts of tests were fully complete.", {style: "color: red;"})
                 warningWritten = true
             }
         }
 
-        function writeLateEvent(written, ended, jqueryElement, event, manager) {
+        function writeLateEvent(written, ended, domNode, event, manager) {
             if(ended) {
                 written.then(function() {
-                    warnAboutLateEvents(jqueryElement)
-                    jqueryElement.append(
-                        '<div style="color:'+red+'">'+JSON.stringify(event)+'</div>'
-                    )
+                    warnAboutLateEvents(domNode)
+                    append(domNode, JSON.stringify(event), {style: "color: red;"})
                 })
             }
         }
 
         // writes html on the current (browser) page
-        this.writeHtml = function(jqueryElement) {
-            if(jqueryElement === undefined) jqueryElement = $('body')
+        this.writeHtml = function(domNode) {
+            if(domNode === undefined) domNode = document.body
 
             var f = new Future, test = this, ended = false, written = new Future
             test.events({
                 end: function() {
                     ended = true
                     test.html(false).then(function(output) {
-                        jqueryElement.append(output)
+                        append(domNode, output)
                         written.return()
                         f.return()
                     })
                 },
 
                 assert: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager)
+                    writeLateEvent(written, ended, domNode, event, test.manager)
                 },
                 exception: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager)
+                    writeLateEvent(written, ended, domNode, event, test.manager)
                 },
                 log: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager, event.parent, event.time)
+                    writeLateEvent(written, ended, domNode, event, test.manager, event.parent, event.time)
                 }
             })
             return f
@@ -220,6 +216,19 @@ module.exports = deadunitInternal({
     }
 })
 
+function append(domNode, content, attributes) {
+    if(attributes ===  undefined) attributes = {}
+
+    var div = document.createElement('div')
+        div.innerHTML = content
+    for(var attribute in attributes) {
+        var a = document.createAttribute(attribute)
+            a.nodeValue = attributes[attribute]
+        domNode.setAttributeNode(a);
+    }
+
+    domNode.appendChild(div)
+}
 },{"./deadunit.internal":3,"async-future":6,"deadunit-core/deadunitCore.browser":18}],3:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
@@ -256,7 +265,7 @@ module.exports = function(options) {
 }
 
 
-},{"./basicFormatter":1,"./defaultFormats":4,"proto":40}],4:[function(_dereq_,module,exports){
+},{"./basicFormatter":1,"./defaultFormats":4,"proto":45}],4:[function(_dereq_,module,exports){
 var util = _dereq_("util")
 
 var Future = _dereq_('async-future')
@@ -3385,9 +3394,18 @@ function hasOwnProperty(obj, prop) {
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
+var deadunitCore = _dereq_("./deadunitCore")
+var browserConfig = _dereq_('./deadunitCore.browserConfig')
+
+module.exports = deadunitCore(browserConfig())
+},{"./deadunitCore":20,"./deadunitCore.browserConfig":19}],19:[function(_dereq_,module,exports){
+"use strict";
+/* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
+
 var path = _dereq_('path');
 
 var Future = _dereq_('async-future')
+var proto = _dereq_('proto')
 var stackinfo = _dereq_('stackinfo')
 var ajax = _dereq_("ajax")
 var resolveSourceMap = Future.wrap(_dereq_('source-map-resolve').resolveSourceMap)
@@ -3422,18 +3440,23 @@ if(window.setImmediate === undefined) {
 ajax.cacheGet(cacheGet)
 ajax.cacheSet(cacheSet)
 
-// node.js errback style readFile
-function readFile(url, callback) {
-    ajax(url).then(function(response) {
-        callback(undefined, response.text)
-    }).catch(callback).done()
-}
 
+var config = module.exports = proto(function() {
+    this.init = function() {
+        var that = this
+        // node.js errback style readFile
+        /*private*/ this.readFile = function(url, callback) {
+            that.ajax(url).then(function(response) { // need to use 'that' because readFile will not be called with this config object as the context
+                callback(undefined, response.text)
+            }).catch(callback).done()
+        }
+    }
 
-module.exports = deadunitCore({
-    initialize: function() {},
+    this.ajax = ajax
 
-    initializeMainTest: function(testState) {
+    this.initialize = function() {}
+
+    this.initializeMainTest = function(testState) {
         //testState.active = true // make sure
 
         testState.oldOnerror = window.onerror
@@ -3449,33 +3472,34 @@ module.exports = deadunitCore({
                     testState.oldOnerror.apply(this, arguments)
             }
         }
-    },
-    mainTestDone: function(testState) {
+    }
+    this.mainTestDone= function(testState) {
         //testState.active = false // make sure the test-specific onerror code is no longer run
         /*if(testState.newOnerror === window.onerror) {
             window.onerror = testState.oldOnerror // otherwise something else has overwritten onerror, so don't mess with it
         }*/
-    },
+    }
 
-    getDomain: function() {
+    this.getDomain= function() {
         return undefined // domains don't exist in-browser
-    },
+    }
 
-    runTestGroup: function(deadunitState, tester, runTest, handleError, handleUnhandledError) {
+    this.runTestGroup= function(deadunitState, tester, runTest, handleError, handleUnhandledError) {
         runTest()
-    },
-    getScriptSourceLines: function(path) {
+    }
+    this.getScriptSourceLines= function(path) {
         if(stackinfo.sourceCache[path] !== undefined) {
             return Future(stackinfo.sourceCache[path])
         } else {
-            return ajax(path).then(function(response) {
+            return this.ajax(path).then(function(response) {
                 return Future(response.text.split('\n'))
             })
         }
 
-    },
-    getSourceMapObject: function(url, warningHandler) {
-        return ajax(url).then(function(response) {
+    }
+    this.getSourceMapObject = function(url, warningHandler) {
+        var that = this
+        return this.ajax(url).then(function(response) {
             var headers = response.headers
             if(headers['SourceMap'] !== undefined) {
                 var headerSourceMap = headers['SourceMap']
@@ -3488,12 +3512,12 @@ module.exports = deadunitCore({
                     headerSourceMap = path.join(path.dirname(url),headerSourceMap)
                 }
 
-                return ajax(headerSourceMap).then(function(response) {
+                return that.ajax(headerSourceMap).then(function(response) {
                     return Future(JSON.parse(response.text))
                 })
 
             } else {
-                return resolveSourceMap(response.text, url, readFile).catch(function(e){
+                return resolveSourceMap(response.text, url, that.readFile).catch(function(e){
                     warningHandler(e)
                     return Future(undefined)
 
@@ -3506,9 +3530,9 @@ module.exports = deadunitCore({
                 })
             }
         })
-    },
+    }
 
-    defaultUnhandledErrorHandler: function(e) {
+    this.defaultUnhandledErrorHandler= function(e) {
         //if(e !== undefined)
             setTimeout(function() {
                 if(e.stack)
@@ -3516,8 +3540,8 @@ module.exports = deadunitCore({
                 else
                     console.log(e)
             },0)
-    },
-    defaultTestErrorHandler: function(tester) {
+    }
+    this.defaultTestErrorHandler= function(tester) {
         return function(e) {
             tester.manager.emit('exception', {
                 parent: tester.mainSubTest.id,
@@ -3525,17 +3549,17 @@ module.exports = deadunitCore({
                 error: e
             })
         }
-    },
+    }
 
-    getLineInfo: function(stackIncrease) {
+    this.getLineInfo= function(stackIncrease) {
         return stackinfo()[3+stackIncrease]
-    },
+    }
 
-    getExceptionInfo: function(e) {
+    this.getExceptionInfo= function(e) {
         return stackinfo(e)
     }
 })
-},{"./deadunitCore":19,"./isRelative":20,"ajax":21,"async-future":6,"path":10,"source-map-resolve":24,"stackinfo":37}],19:[function(_dereq_,module,exports){
+},{"./deadunitCore":20,"./isRelative":21,"ajax":22,"async-future":25,"path":10,"proto":45,"source-map-resolve":29,"stackinfo":42}],20:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -3754,6 +3778,18 @@ module.exports = function(options) {
 
     function createUnhandledErrorHandler(tester) {
 
+        var handleErrorInErrorHandler = function(warn, newError) {
+            if(warn !== false) {
+                try {
+                    tester.warningHandler(newError)
+                } catch(warningHandlerError) {
+                    tester.manager.emit('exception', Future(warningHandlerError)).done() // if shit gets this bad, that sucks
+                }
+            } else {
+                console.error(newError)
+            }
+        }
+
         // warn should be set to false if the handler is being called to report a warning
         return function(e, warn) {
             if(tester.unhandledErrorHandler !== undefined) {
@@ -3762,20 +3798,14 @@ module.exports = function(options) {
                     return Future(undefined)
 
                 } catch(newError) {     // error handler had an error...
-                    if(warn !== false) {
-                        try {
-                            tester.warningHandler(newError)
-                        } catch(warningHandlerError) {
-                            tester.manager.emit('exception', Future(warningHandlerError)).done() // if shit gets this bad, that sucks
-                        }
-                    }
+                    handleErrorInErrorHandler(warn, newError)
                 }
             }
             // else
 
             var errorToEmit = mapException(e, tester.warningHandler).catch(function(newError) {
                 if(newError.message !== "Accessing the 'caller' property of a function or arguments object is not allowed in strict mode") { // stacktrace.js doesn't support IE for certain things
-                    tester.warningHandler(newError)
+                    handleErrorInErrorHandler(warn, newError)
                 }
                 return Future(e) // use the original unmapped exception
 
@@ -3904,9 +3934,9 @@ module.exports = function(options) {
                 this.doneAsserts += 1
                 afterWaitingEmitIsComplete(this, assert(this, success, actualValue, expectedValue, 'assert', "ok")).done()
             },
-            eq: function(expectedValue, testValue) {
+            eq: function(actualValue, expectedValue) {
                 this.doneAsserts += 1
-                afterWaitingEmitIsComplete(this, assert(this, expectedValue === testValue, testValue, expectedValue, 'assert', "eq")).done()
+                afterWaitingEmitIsComplete(this, assert(this, expectedValue === actualValue, actualValue, expectedValue, 'assert', "eq")).done()
             },
             count: function(number) {
                 if(this.countExpected !== undefined)
@@ -4061,6 +4091,8 @@ module.exports = function(options) {
     function getLineInformation(functionName, stackIncrease, doSourcemappery, warningHandler) {
         var info = options.getLineInfo(stackIncrease)
 
+        var file, line, column;
+
         return getSourceMapConsumer(info.file, warningHandler).catch(function(e){
             warningHandler(e)
             return Future(undefined)
@@ -4069,27 +4101,28 @@ module.exports = function(options) {
             if(sourceMapConsumer !== undefined && doSourcemappery) {
 
                 var mappedInfo = getMappedSourceInfo(sourceMapConsumer, info.file, info.line, info.column)
-                var file = mappedInfo.file
-                var line = mappedInfo.line
-                var column = mappedInfo.column
+                file = mappedInfo.file
+                line = mappedInfo.line
+                column = mappedInfo.column
 
                 var multiLineSearch = !mappedInfo.usingOriginalFile // don't to a multi-line search if the source has been mapped (the file might not be javascript)
-                var sourceLines = getFunctionCallLines(mappedInfo.file, functionName, mappedInfo.line, multiLineSearch, warningHandler)
+                return getFunctionCallLines(mappedInfo.file, functionName, mappedInfo.line, multiLineSearch, warningHandler)
 
             } else {
-                var file = info.file
-                var line = info.line
-                var column = info.column
-                var sourceLines = getFunctionCallLines(file, functionName, line, true, warningHandler)
+                file = info.file
+                line = info.line
+                column = info.column
+                return getFunctionCallLines(file, functionName, line, true, warningHandler)
             }
-
-            return sourceLines.then(function(sourceLines) {
-                return Future({
-                    sourceLines: sourceLines,
-                    file: path.basename(file),
-                    line: line,
-                    column: column
-                })
+        }).catch(function(e) {
+            warningHandler(e)
+            return Future("<source not available>")
+        }).then(function(sourceLines) {
+            return Future({
+                sourceLines: sourceLines,
+                file: path.basename(file),
+                line: line,
+                column: column
             })
         })
     }
@@ -4135,7 +4168,7 @@ module.exports = function(options) {
 
         return {
             file: file,
-            fn: fn,
+            function: fn,
             line: line,
             column: column,
             usingOriginalFile: originalFile
@@ -4166,23 +4199,29 @@ module.exports = function(options) {
             }
             // else
             return Future("<source not available>")
+
         })
     }
 
     var sourceMapConsumerCache = {} // a map from a script url to a future of its SourceMapConsumer object (null means no sourcemap exists)
     function getSourceMapConsumer(url, warningHandler) {
         if(sourceMapConsumerCache[url] === undefined) {
-            sourceMapConsumerCache[url] = options.getSourceMapObject(url, warningHandler).then(function(sourceMapObject) {
-                if(sourceMapObject !== undefined) {
-                    if(sourceMapObject.version === undefined) {
-                        warningHandler(new Error("Sourcemap for "+url+" doesn't contain the required 'version' property. Assuming version 2."))
-                        sourceMapObject.version = 2 // assume version 2 to make browserify's broken sourcemap format that omits the version
+            try {
+                sourceMapConsumerCache[url] = options.getSourceMapObject(url, warningHandler).then(function(sourceMapObject) {
+                    if(sourceMapObject !== undefined) {
+                        if(sourceMapObject.version === undefined) {
+                            warningHandler(new Error("Sourcemap for "+url+" doesn't contain the required 'version' property. Assuming version 2."))
+                            sourceMapObject.version = 2 // assume version 2 to make browserify's broken sourcemap format that omits the version
+                        }
+                        return Future(new SourceMapConsumer(sourceMapObject))
+                    } else {
+                        return Future(undefined)
                     }
-                    return Future(new SourceMapConsumer(sourceMapObject))
-                } else {
-                    return Future(undefined)
-                }
-            })
+                })
+            } catch(e) {
+                sourceMapConsumerCache[url] = Future(undefined)
+                warningHandler(e)
+            }
         }
 
         return sourceMapConsumerCache[url]
@@ -4245,7 +4284,7 @@ module.exports = function(options) {
             for(var n=0; n<traceInfo.length; n++) {
                 var info = traceInfo[n]
                 if(sourceMapConsumers[n] !== undefined) {
-                    info = getMappedSourceInfo(sourceMapConsumers[n], info.file, info.line, info.column, info.fn)
+                    info = getMappedSourceInfo(sourceMapConsumers[n], info.file, info.line, info.column, info.function)
                 }
 
                 var fileLineColumn = info.line
@@ -4257,8 +4296,8 @@ module.exports = function(options) {
                 }
 
                 var traceLine = "    at "
-                if(info.fn !== undefined) {
-                    traceLine += info.fn+' ('+fileLineColumn+')'
+                if(info.function !== undefined) {
+                    traceLine += info.function+' ('+fileLineColumn+')'
                 } else {
                     traceLine += fileLineColumn
                 }
@@ -4365,7 +4404,7 @@ function newError(message, ErrorPrototype) {
         return e
     }
 }
-},{"./isRelative":20,"./processResults":39,"async-future":6,"path":10,"proto":40,"source-map":25,"url":15}],20:[function(_dereq_,module,exports){
+},{"./isRelative":21,"./processResults":44,"async-future":25,"path":10,"proto":45,"source-map":30,"url":15}],21:[function(_dereq_,module,exports){
 var path = _dereq_('path')
 
 module.exports = function isRelative(p) {
@@ -4373,7 +4412,7 @@ module.exports = function isRelative(p) {
     var absolute = path.resolve(p)
     return normal != absolute && p.indexOf('://') === -1// second part for urls
 }
-},{"path":10}],21:[function(_dereq_,module,exports){
+},{"path":10}],22:[function(_dereq_,module,exports){
 var Future = _dereq_("async-future")
 
 // returns the XHR function or equivalent for use with ajax
@@ -4455,7 +4494,11 @@ exports = module.exports = function(url) {
 
 
     req.open('GET', url, asynchronous)
-    req.send()
+    try {
+        req.send()
+    } catch(e) {
+        futureResult.throw(e)
+    }
 
     return futureResult
 }
@@ -4479,7 +4522,314 @@ exports.cacheGet = function(fn) {
 exports.cacheSet = function(fn) {
     setOnCache = fn
 }
-},{"async-future":6}],22:[function(_dereq_,module,exports){
+},{"async-future":23}],23:[function(_dereq_,module,exports){
+module.exports=_dereq_(6)
+},{"trimArguments":24}],24:[function(_dereq_,module,exports){
+module.exports=_dereq_(7)
+},{}],25:[function(_dereq_,module,exports){
+/* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
+
+var trimArgs = _dereq_("trimArguments")
+
+
+module.exports = Future
+
+Future.debug = false // switch this to true if you want ids and long stack traces
+
+var curId = 0         // for ids\
+function Future(value) {
+	if(arguments.length > 0) {
+		var f = new Future()
+        f.return(value)
+        return f
+	} else {
+        this.isResolved = false
+        this.queue = []
+        if(Future.debug) {
+            curId++
+            this.id = curId
+        }
+    }
+}
+
+// static methods
+
+// has one parameter: either a bunch of futures, or a single array of futures
+// returns a promise that resolves when one of them errors, or when all of them succeeds
+Future.all = function() {
+    if(arguments[0] instanceof Array) {
+        var futures = arguments[0]
+    } else {
+        var futures = trimArgs(arguments)
+    }
+
+    var f = new Future()
+    var results = []
+
+    if(futures.length > 0) {
+        var current = futures[0]
+        futures.forEach(function(future, index) {
+            current = current.then(function(v) {
+                results[index] = v
+                return futures[index+1]
+            })
+        })
+
+        //if
+        current.catch(function(e) {
+            f.throw(e)
+        })
+        // else
+        current.then(function() {
+            f.return(results)
+        })
+
+
+    } else {
+        f.return(results)
+    }
+
+    return f
+}
+
+// either used like futureWrap(function(){ ... })(arg1,arg2,etc) or
+//  futureWrap(object, 'methodName')(arg1,arg2,etc)
+Future.wrap = function() {
+    // function
+    if(arguments.length === 1) {
+        var fn = arguments[0]
+        var object = undefined
+
+
+    // object, function
+    } else {
+        var object = arguments[0]
+        var fn = object[arguments[1]]
+    }
+
+    return function() {
+        var args = Array.prototype.slice.call(arguments)
+        var future = new Future
+        args.push(future.resolver())
+        var me = this
+        if(object) me = object
+        fn.apply(me, args)
+        return future
+    }
+}
+
+
+// default
+var unhandledErrorHandler = function(e) {
+    setTimeout(function() {
+        throw e
+    },0)
+}
+
+// setup unhandled error handler
+// unhandled errors happen when done is called, and  then an exception is thrown from the future
+Future.error = function(handler) {
+    unhandledErrorHandler = handler
+}
+
+// instance methods
+
+// returns a value for the future (can only be executed once)
+// if there are callbacks waiting on this value, they are run in the next tick
+    // (ie they aren't run immediately, allowing the current thread of execution to complete)
+Future.prototype.return = function(v) {
+    resolve(this, 'return', v)
+}
+Future.prototype.throw = function(e) {
+    resolve(this, 'error', e)
+}
+
+function setNext(that, future) {
+    if(future !== undefined && !isLikeAFuture(future) )
+        throw Error("Value returned from then or catch *not* a Future: "+future)
+
+    resolve(that, 'next', future)
+}
+
+function wait(that, cb) {
+    if(that.isResolved) {
+        executeCallbacks(that, [cb])
+    } else {
+        that.queue.push(cb)
+    }
+}
+
+// duck typing to determine if something is or isn't a future
+var isLikeAFuture = Future.isLikeAFuture = function(x) {
+    return x.isResolved !== undefined && x.queue !== undefined && x.then !== undefined
+}
+
+function waitOnResult(f, result, cb) {
+    wait(result, function() {
+        if(this.hasError) {
+            f.throw(this.error)
+        } else if(this.hasNext) {
+            waitOnResult(f, this.next, cb)
+        } else {
+            try {
+                setNext(f, cb(this.result))
+            } catch(e) {
+                f.throw(e)
+            }
+        }
+    })
+}
+
+
+// cb takes one parameter - the value returned
+// cb can return a Future, in which case the result of that Future is passed to next-in-chain
+Future.prototype.then = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        if(this.hasError)
+            f.throw(this.error)
+        else if(this.hasNext)
+            waitOnResult(f, this.next, cb)
+        else {
+            try {
+                setNext(f, cb(this.result))
+            } catch(e) {
+                f.throw(e)
+            }
+        }
+    })
+    return f
+}
+// cb takes one parameter - the error caught
+// cb can return a Future, in which case the result of that Future is passed to next-in-chain
+Future.prototype.catch = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        if(this.hasError) {
+            try {
+                setNext(f, cb(this.error))
+            } catch(e) {
+                f.throw(e)
+            }
+        } else if(this.hasNext) {
+            this.next.then(function(v) {
+                f.return(v)
+            }).catch(function(e) {
+                setNext(f, cb(e))
+            })
+        } else {
+            f.return(this.result)
+        }
+    })
+    return f
+}
+// cb takes no parameters
+// callback's return value is ignored, but thrown exceptions propogate normally
+Future.prototype.finally = function(cb) {
+    var f = new Future
+    wait(this, function() {
+        try {
+            var that = this
+            if(this.hasNext) {
+                this.next.then(function(v) {
+                    var x = cb()
+                    f.return(v)
+                    return x
+                }).catch(function(e) {
+                    var x = cb()
+                    f.throw(e)
+                    return x
+                }).done()
+            } else if(this.hasError) {
+                Future(true).then(function() {
+                    return cb()
+                }).then(function() {
+                    f.throw(that.error)
+                }).catch(function(e) {
+                    f.throw(e)
+                }).done()
+
+            } else  {
+                Future(true).then(function() {
+                    return cb()
+                }).then(function() {
+                    f.return(that.result)
+                }).catch(function(e) {
+                    f.throw(e)
+                }).done()
+            }
+        } catch(e) {
+            f.throw(e)
+        }
+    })
+    return f
+}
+
+// all unused futures should end with this (e.g. most then-chains)
+// detatches the future so any propogated exception is thrown (so the exception isn't silently lost)
+Future.prototype.done = function() {
+    wait(this, function() {
+        if(this.hasError) {
+            unhandledErrorHandler(this.error)
+        } else if(this.hasNext) {
+            this.next.catch(function(e) {
+                unhandledErrorHandler(e)
+            })
+        }
+    })
+}
+
+
+
+Future.prototype.resolver = function() {
+    var me = this
+
+    return function(e,v) {
+        if(e) { // error argument
+            me.throw(e)
+        } else {
+            me.return(v)
+        }
+    }
+}
+
+Future.prototype.resolved = function() {
+    return this.isResolved
+}
+
+
+function resolve(that, type, value) {
+    if(that.isResolved)
+        throw Error("Future resolved more than once! Resolution: "+value)
+
+    that.isResolved = true
+    that.hasError = type === 'error'
+    that.hasNext = type === 'next' && value !== undefined
+
+    if(that.hasError)
+        that.error = value
+    else if(that.hasNext)
+        that.next = value
+    else
+        that.result = value
+
+    executeCallbacks(that, that.queue)
+}
+
+function executeCallbacks(that, callbacks) {
+    if(callbacks.length > 0) {
+        try {
+            callbacks.forEach(function(cb) {
+                cb.apply(that)
+            })
+        } catch(e) {
+            unhandledErrorHandler(e)
+        }
+    }
+}
+},{"trimArguments":26}],26:[function(_dereq_,module,exports){
+module.exports=_dereq_(7)
+},{}],27:[function(_dereq_,module,exports){
 // Copyright 2014 Simon Lydell
 // X11 (“MIT”) Licensed. (See LICENSE.)
 
@@ -4528,7 +4878,7 @@ void (function(root, factory) {
 
 }));
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],28:[function(_dereq_,module,exports){
 // Copyright 2014 Simon Lydell
 
 void (function(root, factory) {
@@ -4608,7 +4958,7 @@ void (function(root, factory) {
 
 }));
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],29:[function(_dereq_,module,exports){
 // Copyright 2014 Simon Lydell
 // X11 (“MIT”) Licensed. (See LICENSE.)
 
@@ -4846,7 +5196,7 @@ void (function(root, factory) {
 
 }));
 
-},{"resolve-url":22,"source-map-url":23}],25:[function(_dereq_,module,exports){
+},{"resolve-url":27,"source-map-url":28}],30:[function(_dereq_,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -4856,7 +5206,7 @@ exports.SourceMapGenerator = _dereq_('./source-map/source-map-generator').Source
 exports.SourceMapConsumer = _dereq_('./source-map/source-map-consumer').SourceMapConsumer;
 exports.SourceNode = _dereq_('./source-map/source-node').SourceNode;
 
-},{"./source-map/source-map-consumer":30,"./source-map/source-map-generator":31,"./source-map/source-node":32}],26:[function(_dereq_,module,exports){
+},{"./source-map/source-map-consumer":35,"./source-map/source-map-generator":36,"./source-map/source-node":37}],31:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4955,7 +5305,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./util":33,"amdefine":34}],27:[function(_dereq_,module,exports){
+},{"./util":38,"amdefine":39}],32:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5101,7 +5451,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./base64":28,"amdefine":34}],28:[function(_dereq_,module,exports){
+},{"./base64":33,"amdefine":39}],33:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5145,7 +5495,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":34}],29:[function(_dereq_,module,exports){
+},{"amdefine":39}],34:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5228,7 +5578,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":34}],30:[function(_dereq_,module,exports){
+},{"amdefine":39}],35:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5708,7 +6058,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":26,"./base64-vlq":27,"./binary-search":29,"./util":33,"amdefine":34}],31:[function(_dereq_,module,exports){
+},{"./array-set":31,"./base64-vlq":32,"./binary-search":34,"./util":38,"amdefine":39}],36:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -6107,7 +6457,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":26,"./base64-vlq":27,"./util":33,"amdefine":34}],32:[function(_dereq_,module,exports){
+},{"./array-set":31,"./base64-vlq":32,"./util":38,"amdefine":39}],37:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -6496,7 +6846,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./source-map-generator":31,"./util":33,"amdefine":34}],33:[function(_dereq_,module,exports){
+},{"./source-map-generator":36,"./util":38,"amdefine":39}],38:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -6800,7 +7150,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":34}],34:[function(_dereq_,module,exports){
+},{"amdefine":39}],39:[function(_dereq_,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 0.1.0 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -7103,7 +7453,7 @@ function amdefine(module, requireFn) {
 module.exports = amdefine;
 
 }).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),"/node_modules\\deadunit-core\\node_modules\\source-map\\node_modules\\amdefine\\amdefine.js")
-},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"path":10}],35:[function(_dereq_,module,exports){
+},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"path":10}],40:[function(_dereq_,module,exports){
 
 
 module.exports = exceptionMode(createException()) // basically what browser this is
@@ -7154,7 +7504,7 @@ function createException() {
     }
 }
 
-},{}],36:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 // Domain Public by Eric Wendelin http://eriwen.com/ (2008)
 //                  Luke Smith http://lucassmith.name/ (2008)
 //                  Loic Dachary <loic@dachary.org> (2008)
@@ -7617,7 +7967,7 @@ function createException() {
 
 	return printStackTrace;
 }));
-},{}],37:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
 var printStackTrace = _dereq_('stacktrace-js')
 var parsers = _dereq_('./tracelineParser')
 var mode = _dereq_('./exceptionMode')
@@ -7648,7 +7998,7 @@ TraceInfo.prototype = {
     get file() {
         return getInfo(this).file
     },
-    get fn() {
+    get function() {
         return getInfo(this).function
     },
     get line() {
@@ -7689,16 +8039,16 @@ module.exports.parsers = parsers
 module.exports.mode = mode
 module.exports.sourceCache = printStackTrace.implementation.prototype.sourceCache // expose this so you can consolidate caches together from different libraries
 
-},{"./exceptionMode":35,"./tracelineParser":38,"stacktrace-js":36}],38:[function(_dereq_,module,exports){
+},{"./exceptionMode":40,"./tracelineParser":43,"stacktrace-js":41}],43:[function(_dereq_,module,exports){
 
 module.exports = {
     chrome: function(line) {
         var m = line.match(CHROME_STACK_LINE);
         if (m) {
-            var file = m[9] || m[17] || m[24]
-            var fn = m[4] || m[7] || m[13] || m[21]
-            var lineNumber = m[11] || m[19]
-            var column = m[12] || m[20]
+            var file = m[9] || m[18] || m[26]
+            var fn = m[4] || m[7] || m[14] || m[23]
+            var lineNumber = m[11] || m[20]
+            var column = m[13] || m[22]
         } else {
             //throw new Error("Couldn't parse exception line: "+line)
         }
@@ -7717,22 +8067,24 @@ module.exports = {
             var file = m[8]
             var fn = m[1]
             var lineNumber = m[10]
+            var column = m[12]
         }
         
         return {
             file: file,
             function: fn,
-            line: lineNumber
+            line: lineNumber,
+            column: column
         }
     },
     
     ie: function(line) {
         var m = line.match(IE_STACK_LINE);
         if (m) {
-            var file = m[3] || m[9]
-            var fn = m[2] || m[8]
-            var lineNumber = m[5] || m[11]
-            var column = m[6] || m[12]
+            var file = m[3] || m[10]
+            var fn = m[2] || m[9]
+            var lineNumber = m[5] || m[12]
+            var column = m[7] || m[14]
         }
         
         return {
@@ -7748,13 +8100,14 @@ module.exports = {
 // RegExp pattern for JavaScript identifiers. We don't support Unicode identifiers defined in ECMAScript v3.
 var IDENTIFIER_PATTERN_ = '[a-zA-Z_$][\\w$]*';
 // RegExp pattern for an URL + position inside the file.
-var URL_PATTERN_ = '((?:http|https|file)://[^\\s)]+|javascript:.*)';
+var URL_PATTERN_ = '((?:http|https|file)://[^\\s)]+?|javascript:.*)';
+var FILE_AND_LINE = URL_PATTERN_+'(:(\\d*)(:(\\d*))?)'
 
 var STACKTRACE_JS_GETSOURCE_FAILURE = 'getSource failed with url'
 
 var CHROME_STACKTRACE_JS_GETSOURCE_FAILURE = STACKTRACE_JS_GETSOURCE_FAILURE+'((?!'+'\\(\\)@'+').)*'
 
-var CHROME_FILE_AND_LINE = URL_PATTERN_+'(:(\\d*):(\\d*))'
+var CHROME_FILE_AND_LINE = FILE_AND_LINE//URL_PATTERN_+'(:(\\d*):(\\d*))'
 var CHROME_IDENTIFIER_PATTERN = '\\<?'+IDENTIFIER_PATTERN_+'\\>?'
 var CHROME_COMPOUND_IDENTIFIER = "((new )?"+CHROME_IDENTIFIER_PATTERN+'(\\.'+CHROME_IDENTIFIER_PATTERN+')*)( \\[as '+IDENTIFIER_PATTERN_+'])?'
 var CHROME_UNKNOWN_IDENTIFIER = "(\\(\\?\\))"
@@ -7771,7 +8124,7 @@ var CHROME_STACK_LINE = new RegExp('^'+CHROME_FUNCTION_CALL+'$')  // precompile 
 
 
 var FIREFOX_STACKTRACE_JS_GETSOURCE_FAILURE = STACKTRACE_JS_GETSOURCE_FAILURE+'((?!'+'\\(\\)@'+').)*'+'\\(\\)'
-var FIREFOX_FILE_AND_LINE = URL_PATTERN_+'(:(\\d*))'
+var FIREFOX_FILE_AND_LINE = FILE_AND_LINE//URL_PATTERN_+'((:(\\d*):(\\d*))|(:(\\d*)))'
 var FIREFOX_ARRAY_PART = '\\[\\d*\\]'
 var FIREFOX_WEIRD_PART = '\\(\\?\\)'
 var FIREFOX_COMPOUND_IDENTIFIER = '(('+IDENTIFIER_PATTERN_+'|'+FIREFOX_ARRAY_PART+'|'+FIREFOX_WEIRD_PART+')((\\(\\))?|(\\.|\\<|/)*))*'
@@ -7779,12 +8132,12 @@ var FIREFOX_FUNCTION_CALL = '('+FIREFOX_COMPOUND_IDENTIFIER+'|'+FIREFOX_STACKTRA
 var FIREFOX_STACK_LINE = new RegExp('^'+FIREFOX_FUNCTION_CALL+'$')
 
 var IE_WHITESPACE = '[\\w \\t]'
-var IE_FILE_AND_LINE = CHROME_FILE_AND_LINE
+var IE_FILE_AND_LINE = FILE_AND_LINE
 var IE_ANONYMOUS = '('+IE_WHITESPACE+'*({anonymous}\\(\\)))@\\('+IE_FILE_AND_LINE+'\\)'
 var IE_NORMAL_FUNCTION = '('+IDENTIFIER_PATTERN_+')@'+IE_FILE_AND_LINE
 var IE_FUNCTION_CALL = '('+IE_NORMAL_FUNCTION+'|'+IE_ANONYMOUS+')'+IE_WHITESPACE+'*'
 var IE_STACK_LINE = new RegExp('^'+IE_FUNCTION_CALL+'$')
-},{}],39:[function(_dereq_,module,exports){
+},{}],44:[function(_dereq_,module,exports){
 module.exports = function returnResults(unitTestObject) {
 
     var results;
@@ -7857,6 +8210,7 @@ module.exports = function returnResults(unitTestObject) {
         },
         end: function(e) {
             primaryGroup.timeout = e.type === 'timeout'
+            setGroupDuration(primaryGroup.id, e.time)
 
             // make the count assertions
             eachTest(primaryGroup, function(subtest, parenttest) {
@@ -7869,7 +8223,7 @@ module.exports = function returnResults(unitTestObject) {
                             actualCount++
                     })
 
-                    subtest.results.push({
+                    subtest.results.splice(0,0,{
                         parent: subtest.id,
                         type: 'assert',
                         success: actualCount === info.expected,
@@ -7889,7 +8243,11 @@ module.exports = function returnResults(unitTestObject) {
     })
 
     function setGroupDuration(groupid, time) {
-        groups[groupid].duration = time - groups[groupid].time
+        var newDuration = time - groups[groupid].time
+        if(newDuration > groups[groupid].duration) {
+            groups[groupid].duration = newDuration
+        }
+
         if(groups[groupid].parent) {
             setGroupDuration(groups[groupid].parent, time)
         }
@@ -7909,7 +8267,7 @@ function eachTest(test, callback, parent) {
 
     callback(test, parent)
 }
-},{}],40:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2013 Billy Tetrud - Free to use for any purpose: MIT License*/
 

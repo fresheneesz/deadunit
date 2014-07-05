@@ -11,49 +11,45 @@ module.exports = deadunitInternal({
         var red = 'rgb(200,30,30)'
 
         var warningWritten = false
-        function warnAboutLateEvents(jqueryElement) {
+        function warnAboutLateEvents(domNode) {
             if(!warningWritten) {
-                jqueryElement.append(
-                    '<div style="color:'+red+'">Test results were accessed before asynchronous parts of tests were fully complete.</div>'
-                )
+                append(domNode, "Test results were accessed before asynchronous parts of tests were fully complete.", {style: "color: red;"})
                 warningWritten = true
             }
         }
 
-        function writeLateEvent(written, ended, jqueryElement, event, manager) {
+        function writeLateEvent(written, ended, domNode, event, manager) {
             if(ended) {
                 written.then(function() {
-                    warnAboutLateEvents(jqueryElement)
-                    jqueryElement.append(
-                        '<div style="color:'+red+'">'+JSON.stringify(event)+'</div>'
-                    )
+                    warnAboutLateEvents(domNode)
+                    append(domNode, JSON.stringify(event), {style: "color: red;"})
                 })
             }
         }
 
         // writes html on the current (browser) page
-        this.writeHtml = function(jqueryElement) {
-            if(jqueryElement === undefined) jqueryElement = $('body')
+        this.writeHtml = function(domNode) {
+            if(domNode === undefined) domNode = document.body
 
             var f = new Future, test = this, ended = false, written = new Future
             test.events({
                 end: function() {
                     ended = true
                     test.html(false).then(function(output) {
-                        jqueryElement.append(output)
+                        append(domNode, output)
                         written.return()
                         f.return()
                     })
                 },
 
                 assert: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager)
+                    writeLateEvent(written, ended, domNode, event, test.manager)
                 },
                 exception: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager)
+                    writeLateEvent(written, ended, domNode, event, test.manager)
                 },
                 log: function(event) {
-                    writeLateEvent(written, ended, jqueryElement, event, test.manager, event.parent, event.time)
+                    writeLateEvent(written, ended, domNode, event, test.manager, event.parent, event.time)
                 }
             })
             return f
@@ -61,3 +57,17 @@ module.exports = deadunitInternal({
 
     }
 })
+
+function append(domNode, content, attributes) {
+    if(attributes ===  undefined) attributes = {}
+
+    var div = document.createElement('div')
+        div.innerHTML = content
+    for(var attribute in attributes) {
+        var a = document.createAttribute(attribute)
+            a.nodeValue = attributes[attribute]
+        domNode.setAttributeNode(a);
+    }
+
+    domNode.appendChild(div)
+}
