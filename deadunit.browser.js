@@ -59,9 +59,11 @@ module.exports = deadunitInternal({
 })
 
 function append(domNode, content, attributes) {
+    if(domNode.setAttributeNode === undefined || domNode.appendChild === undefined)
+        console.log("Object that is not a dom node passed to 'append' (jquery objects aren't supported anymore): "+domNode)
     if(attributes ===  undefined) attributes = {}
 
-    var div = document.createElement('div')
+    /*var div = document.createElement('div')
         div.innerHTML = content
     for(var attribute in attributes) {
         var a = document.createAttribute(attribute)
@@ -70,4 +72,6 @@ function append(domNode, content, attributes) {
     }
 
     domNode.appendChild(div)
+    */
+    $(domNode).append(content)
 }

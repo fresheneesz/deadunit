@@ -238,6 +238,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.1 - fixing html display bug caused in last commit
 * 5.1.0
     * changing writeHtml to take a dom node instead of a jquery node
     * pulling in new deadunit version to fix a memory leak and to fix firefox stacktrace parsing for their new format (that includes the column number now)
