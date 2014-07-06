@@ -3700,6 +3700,7 @@ module.exports = function(options) {
             }
 
             this.history = []
+            this.emitDepth = 0 // records how many futures are waiting on eachother, so we can make sure maximum stack depth isn't exceeded
             this.lastEmitFuture = Future(undefined)
         }
 
@@ -3709,14 +3710,23 @@ module.exports = function(options) {
         // eventDataFuture resolves to either an eventData object, or undefined if nothing should be emitted
         this.emit = function(type, eventDataFuture) {
             var that = this
-            this.lastEmitFuture = this.lastEmitFuture.then(function() {
-                return eventDataFuture
-            }).then(function(eventData){
-                if(eventData !== undefined)
-                    recordAndTriggerHandlers.call(that, type, eventData)
-            }).catch(function(e) {
-                that.warningHandler(e)
-            })
+            var doStuff = function() {
+                that.lastEmitFuture = that.lastEmitFuture.then(function() {
+                    return eventDataFuture
+                }).then(function(eventData){
+                    if(eventData !== undefined)
+                        recordAndTriggerHandlers.call(that, type, eventData)
+                }).catch(function(e) {
+                    that.warningHandler(e)
+                })
+            }
+
+            this.emitDepth++
+            if(this.emitDepth%50 == 0) {
+                doStuff()
+            } else {
+                setTimeout(doStuff, 0) // make sure we don't get a "too much recursion error" // todo: test not doing this once browsers all support proper tail calls
+            }
 
             return this.lastEmitFuture
         }
@@ -4060,10 +4070,12 @@ module.exports = function(options) {
             })
         }
 
-        that.manager.emit('end', Future({
-            type: type,
-            time: now()
-        }))
+        setTimeout(function() { // setTimeout here is to make it so the currently running threadlet that caused the test to end can finish before the end event is sent
+            that.manager.emit('end', Future({
+                type: type,
+                time: now()
+            }))
+        },0)
     }
 
     function assert(that, success, actualValue, expectedValue, type, functionName/*="ok"*/, lineInfo/*=dynamic*/, stackIncrease/*=0*/) {
