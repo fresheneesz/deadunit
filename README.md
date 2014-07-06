@@ -238,6 +238,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.3 - updating core
 * 5.1.2 - updating core to pull in some error handling improvements
 * 5.1.1 - fixing html display bug caused in last commit
 * 5.1.0

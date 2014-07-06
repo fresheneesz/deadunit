@@ -3710,8 +3710,9 @@ module.exports = function(options) {
         // eventDataFuture resolves to either an eventData object, or undefined if nothing should be emitted
         this.emit = function(type, eventDataFuture) {
             var that = this
-            var doStuff = function() {
-                that.lastEmitFuture = that.lastEmitFuture.then(function() {
+            var lastEmitFuture = that.lastEmitFuture // capture it for the possible setTimeout threadlet
+            var doStuff = function(f) {
+                var resultFuture = lastEmitFuture.then(function() {
                     return eventDataFuture
                 }).then(function(eventData){
                     if(eventData !== undefined)
@@ -3719,13 +3720,23 @@ module.exports = function(options) {
                 }).catch(function(e) {
                     that.warningHandler(e)
                 })
+
+                if(f !== undefined) {
+                    resultFuture.finally(function() {
+                        f.return()
+                    })
+                }
+
+                return resultFuture
             }
 
             this.emitDepth++
-            if(this.emitDepth%50 == 0) {
-                doStuff()
+            if(this.emitDepth % 50 === 0) {
+                var f = new Future
+                that.lastEmitFuture = f
+                setTimeout(function(){doStuff(f)}, 0) // make sure we don't get a "too much recursion error" // todo: test not doing this once browsers all support proper tail calls
             } else {
-                setTimeout(doStuff, 0) // make sure we don't get a "too much recursion error" // todo: test not doing this once browsers all support proper tail calls
+                that.lastEmitFuture = doStuff()
             }
 
             return this.lastEmitFuture
