@@ -238,6 +238,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.5 - updating core
 * 5.1.4 - updating core to fix "too much recursion" suceptibility
 * 5.1.3 - updating core
 * 5.1.2 - updating core to pull in some error handling improvements

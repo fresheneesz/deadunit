@@ -1,6 +1,6 @@
 {
   "name": "deadunit",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "dependencies": {
     "async-future": {
       "version": "0.1.18",
@@ -20,14 +20,14 @@
       "resolved": "https://github.com/fresheneesz/colors.js/archive/e990804d7c301765409770582c6aa6d562a23198.tar.gz"
     },
     "deadunit-core": {
-      "version": "5.0.9",
-      "from": "deadunit-core@5.0.9",
-      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.9.tgz",
+      "version": "5.0.11",
+      "from": "deadunit-core@5.0.11",
+      "resolved": "https://registry.npmjs.org/deadunit-core/-/deadunit-core-5.0.11.tgz",
       "dependencies": {
         "async-future": {
-          "version": "1.0.0",
-          "from": "https://registry.npmjs.org/async-future/-/async-future-1.0.0.tgz",
-          "resolved": "https://registry.npmjs.org/async-future/-/async-future-1.0.0.tgz",
+          "version": "1.0.2",
+          "from": "https://registry.npmjs.org/async-future/-/async-future-1.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/async-future/-/async-future-1.0.2.tgz",
           "dependencies": {
             "trimArguments": {
               "version": "1.0.0",

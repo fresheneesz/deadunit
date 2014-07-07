@@ -3615,7 +3615,7 @@ module.exports = function(options) {
         this.init = function(/*mainName=undefined, groups*/) {
             var that = this
             var args = arguments
-            this.manager = EventManager()
+            this.manager = EventManager(this)
 
             setTimeout(function() {
                 runTest.call(that, args)
@@ -3650,7 +3650,7 @@ module.exports = function(options) {
                 fakeTest.mainTestState = {get unhandledErrorHandler(){return getUnhandledErrorHandler() || options.defaultTestErrorHandler(fakeTest)}}
 
                 var warningInfoMessageHasBeenOutput = false
-                fakeTest.manager.warningHandler = fakeTest.warningHandler = function(w) {
+                fakeTest.warningHandler = function(w) {
                     var errorHandler = getUnhandledErrorHandler()
                     if(warningInfoMessageHasBeenOutput === false) {
                         var warning = newError("You've received at least one warning. If you don't want to treat warnings as errors, use the `warning` method to redefine how to handle them.")
@@ -3684,7 +3684,7 @@ module.exports = function(options) {
 
     var EventManager = proto(function() {
 
-        this.init = function() {
+        this.init = function(testObject) {
             this.handlers = {
                 group: [],
                 assert: [],
@@ -3702,9 +3702,10 @@ module.exports = function(options) {
             this.history = []
             this.emitDepth = 0 // records how many futures are waiting on eachother, so we can make sure maximum stack depth isn't exceeded
             this.lastEmitFuture = Future(undefined)
+            this.testObject = testObject
         }
 
-        this.warningHandler;
+        this.testObject; // used to get the right warningHandler
 
         // emits an event
         // eventDataFuture resolves to either an eventData object, or undefined if nothing should be emitted
@@ -3718,7 +3719,7 @@ module.exports = function(options) {
                     if(eventData !== undefined)
                         recordAndTriggerHandlers.call(that, type, eventData)
                 }).catch(function(e) {
-                    that.warningHandler(e)
+                    that.testObject.warningHandler(e)
                 })
 
                 if(f !== undefined) {
@@ -3732,7 +3733,7 @@ module.exports = function(options) {
             }
 
             this.emitDepth++
-            if(this.emitDepth % 50 === 0) {
+            if(this.emitDepth % 40 === 0) { // 40 seems to be the magic number here for firefox - such a finicky browser
                 that.lastEmitFuture = doStuff(new Future)
             } else {
                 that.lastEmitFuture = doStuff()
@@ -4571,6 +4572,7 @@ function Future(value) {
 	} else {
         this.isResolved = false
         this.queue = []
+        this.n = 0 // future depth (for preventing "too much recursion" RangeErrors)
         if(Future.debug) {
             curId++
             this.id = curId
@@ -4711,6 +4713,7 @@ function waitOnResult(f, result, cb) {
 // cb can return a Future, in which case the result of that Future is passed to next-in-chain
 Future.prototype.then = function(cb) {
     var f = new Future
+    f.n = this.n + 1
     wait(this, function() {
         if(this.hasError)
             f.throw(this.error)
@@ -4730,6 +4733,7 @@ Future.prototype.then = function(cb) {
 // cb can return a Future, in which case the result of that Future is passed to next-in-chain
 Future.prototype.catch = function(cb) {
     var f = new Future
+    f.n = this.n + 1
     wait(this, function() {
         if(this.hasError) {
             try {
@@ -4741,7 +4745,11 @@ Future.prototype.catch = function(cb) {
             this.next.then(function(v) {
                 f.return(v)
             }).catch(function(e) {
-                setNext(f, cb(e))
+                try {
+                    setNext(f, cb(e))
+                } catch(e) {
+                    f.throw(e)
+                }
             })
         } else {
             f.return(this.result)
@@ -4753,6 +4761,7 @@ Future.prototype.catch = function(cb) {
 // callback's return value is ignored, but thrown exceptions propogate normally
 Future.prototype.finally = function(cb) {
     var f = new Future
+    f.n = this.n + 1
     wait(this, function() {
         try {
             var that = this
@@ -4839,7 +4848,13 @@ function resolve(that, type, value) {
     else
         that.result = value
 
-    executeCallbacks(that, that.queue)
+    if(that.n % 400 !== 0) { // 400 is a pretty arbitrary number - it should be set significantly lower than common maximum stack depths, and high enough to make sure performance isn't significantly affected
+        executeCallbacks(that, that.queue)
+    } else {
+        setTimeout(function() { // this prevents too much recursion errors
+            executeCallbacks(that, that.queue)
+        }, 0)
+    }
 }
 
 function executeCallbacks(that, callbacks) {
