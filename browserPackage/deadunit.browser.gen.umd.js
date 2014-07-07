@@ -3723,18 +3723,17 @@ module.exports = function(options) {
 
                 if(f !== undefined) {
                     resultFuture.finally(function() {
-                        f.return()
+                        setTimeout(function(){f.return()},0) // make sure we don't get a "too much recursion error" // todo: test not doing this once browsers all support proper tail calls
                     })
+                    return f
+                } else {
+                    return resultFuture
                 }
-
-                return resultFuture
             }
 
             this.emitDepth++
             if(this.emitDepth % 50 === 0) {
-                var f = new Future
-                that.lastEmitFuture = f
-                setTimeout(function(){doStuff(f)}, 0) // make sure we don't get a "too much recursion error" // todo: test not doing this once browsers all support proper tail calls
+                that.lastEmitFuture = doStuff(new Future)
             } else {
                 that.lastEmitFuture = doStuff()
             }
