@@ -154,8 +154,8 @@ function formatGroup(testResults, format, nestingLevel) {
 }
 
 
-}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
-},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"async-future":6}],2:[function(_dereq_,module,exports){
+}).call(this,_dereq_("D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
+},{"D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"async-future":6}],2:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -1397,8 +1397,8 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
-},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9}],11:[function(_dereq_,module,exports){
+}).call(this,_dereq_("D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"))
+},{"D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9}],11:[function(_dereq_,module,exports){
 (function (global){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
@@ -3393,8 +3393,8 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":16,"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"inherits":8}],18:[function(_dereq_,module,exports){
+}).call(this,_dereq_("D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":16,"D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"inherits":8}],18:[function(_dereq_,module,exports){
 "use strict";
 /* Copyright (c) 2014 Billy Tetrud - Free to use for any purpose: MIT License*/
 
@@ -4131,16 +4131,19 @@ module.exports = function(options) {
                 file = mappedInfo.file
                 line = mappedInfo.line
                 column = mappedInfo.column
+                var sourceLines = mappedInfo.sourceLines
 
                 var multiLineSearch = !mappedInfo.usingOriginalFile // don't to a multi-line search if the source has been mapped (the file might not be javascript)
-                return getFunctionCallLines(mappedInfo.file, functionName, mappedInfo.line, multiLineSearch, warningHandler)
-
             } else {
                 file = info.file
                 line = info.line
                 column = info.column
-                return getFunctionCallLines(file, functionName, line, true, warningHandler)
+                var sourceLines = undefined
+                var multiLineSearch = true
             }
+
+            return getFunctionCallLines(sourceLines, file, functionName, line, multiLineSearch, warningHandler)
+
         }).catch(function(e) {
             warningHandler(e)
             return Future("<source not available>")
@@ -4165,9 +4168,10 @@ module.exports = function(options) {
         if(sourceMapInfo.source !== null) {
             var relative = isRelative(sourceMapInfo.source)
 
+            /* I don't think this is needed any longer, and probably isn't correct - this was working around an issue in webpack: See https://github.com/webpack/webpack/issues/559 and https://github.com/webpack/webpack/issues/238
             if(sourceMapConsumer.sourceRoot !== null) {
-                sourceMapInfo.source = sourceMapInfo.source.replace(sourceMapConsumer.sourceRoot, '') // remove sourceRoot (todo: quesion: is this the right thing to do? See https://github.com/webpack/webpack/issues/238)
-            }
+                sourceMapInfo.source = sourceMapInfo.source.replace(sourceMapConsumer.sourceRoot, '') // remove sourceRoot
+            }*/
 
             if(relative) {
                 var file = Url.resolve(originalFilePath, path.basename(sourceMapInfo.source))
@@ -4193,19 +4197,31 @@ module.exports = function(options) {
             column = undefined
         }
 
+        if(file != undefined && sourceMapConsumer.sourcesContent != undefined) { // intentional single !=
+            var index = sourceMapConsumer.sources.indexOf(file)
+            var sourceLines = sourceMapConsumer.sourcesContent[index]
+            if(sourceLines !== undefined) sourceLines = sourceLines.split('\n')
+        }
+
         return {
             file: file,
             function: fn,
             line: line,
             column: column,
-            usingOriginalFile: originalFile
+            usingOriginalFile: originalFile,
+            sourceLines: sourceLines
         }
     }
 
     // gets the actual lines of the call
     // if multiLineSearch is true, it finds
-    function getFunctionCallLines(filePath, functionName, lineNumber, multiLineSearch, warningHandler) {
-        return options.getScriptSourceLines(filePath).catch(function(e) {
+    function getFunctionCallLines(sourcesContent, filePath, functionName, lineNumber, multiLineSearch, warningHandler) {
+        if(sourcesContent !==  undefined) {
+            var source = Future(sourcesContent)
+        } else {
+            var source = options.getScriptSourceLines(filePath)
+        }
+        return source.catch(function(e) {
             warningHandler(e)
             return Future(undefined)
 
@@ -7493,8 +7509,8 @@ function amdefine(module, requireFn) {
 
 module.exports = amdefine;
 
-}).call(this,_dereq_("F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),"/node_modules\\deadunit-core\\node_modules\\source-map\\node_modules\\amdefine\\amdefine.js")
-},{"F:\\billysFile\\code\\javascript\\nodejs\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"path":10}],40:[function(_dereq_,module,exports){
+}).call(this,_dereq_("D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js"),"/node_modules\\deadunit-core\\node_modules\\source-map\\node_modules\\amdefine\\amdefine.js")
+},{"D:\\billysFile\\code\\javascript\\nodejs\\modules\\deadunit\\node_modules\\build-modules\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\process\\browser.js":9,"path":10}],40:[function(_dereq_,module,exports){
 
 
 module.exports = exceptionMode(createException()) // basically what browser this is

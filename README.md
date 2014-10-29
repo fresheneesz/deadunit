@@ -196,6 +196,8 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
+* Add tap output http://testanything.org/
+* Add karma integration
 * remove colors from code the browser accesses (again) and consider moving to webpack for your bundle generation
 * remove dependency on jquery
 * Test deadunit on more browsers and browser versions
@@ -238,6 +240,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.6 - updating core
 * 5.1.5 - updating core
 * 5.1.4 - updating core to fix "too much recursion" suceptibility
 * 5.1.3 - updating core
