@@ -3866,6 +3866,8 @@ module.exports = function(options) {
         this.runningTests = 0 // the number of subtests created synchronously
         this.doneCalled = false
         this.doSourcemappery = true // whether to do source mapping, if possible, within this test
+
+        this.complete = new Future // resolved when done
     }
 
         UnitTester.prototype = {
@@ -3898,6 +3900,12 @@ module.exports = function(options) {
                         id: tester.id,
                         time: now()
                     }))
+
+                    try {
+                        tester.complete.return()
+                    } catch(e) {
+                        createUnhandledErrorHandler(tester)(e)
+                    }
 
                     checkGroupDone(that)
                 }
