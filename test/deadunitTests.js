@@ -104,7 +104,7 @@ exports.getTests = function(Unit, options) {
                 setTimeout(function() {
                     t.ok(true) // don't time out
                 }, 0)
-                throw Error("Async")
+                throw Error("Async (expected on the console once)")
             }, 0)
         })
 
@@ -175,7 +175,7 @@ exports.getTests = function(Unit, options) {
                     setTimeout(function() {
                         f.return()
                         t.ok(true)
-                        throw Error("Asynchronous Ahhhhh!")
+                        throw Error("Asynchronous Ahhhhh! (expected on the console once)")
                     },0)
                 })
 
@@ -252,7 +252,35 @@ exports.getTests = function(Unit, options) {
             return f
         })
 
+    }).then(function(){
+        if(options.env === 'browser') {
+
+            announce("problem printing expected and actual values when utils.inspect throws exception")
+
+            var test = Unit.test("problem printing expected and actual values when utils.inspect throws exception (these should all fail)", function() {
+                var setAttribute = function(domNode, type, value) {
+                    var attr = document.createAttribute(type)
+                    attr.value = value
+                    domNode.setAttributeNode(attr)
+                }
+
+                var util = require("util")
+                var x = document.createElement("input");
+                setAttribute(x, "type", "radio")
+
+                this.ok(false, x)
+                this.ok(false, 1, x)
+                this.eq(x,1)
+                this.eq(1,x)
+
+            })
+
+            return printTestOutput(test, "problem printing expected and actual values when utils.inspect throws exception")
+        }
     }).then(function() {
+
+        announce("<br> What you've all been waiting for - the real test")
+
         var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
             var formatBasic = require("../basicFormatter")
             this.timeout(5000)
@@ -426,6 +454,8 @@ exports.getTests = function(Unit, options) {
                 })
             })
         })
+
+
 
         console.log("")
         printTestOutput(realTest, 'realTest', 400)

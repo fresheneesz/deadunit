@@ -52,13 +52,14 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
             }
 
 
-            var testColor, exceptionColor, finalColor
-            testColor = exceptionColor = finalColor = 'green'
+            var testColor, exceptionColor, failColor, finalColor
+            testColor = exceptionColor = failColor = finalColor = 'green'
             if(testFailures > 0) {
-                testColor = finalColor = 'red'
+                testColor = failColor = finalColor = 'red'
             }
             if(exceptions > 0) {
-                exceptionColor = finalColor = 'red'
+                finalColor = 'red'
+                exceptionColor = 'magenta'
             }
 
             var durationText = timeText(totalDuration)
@@ -72,8 +73,8 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
                 resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful tests. ')+
                         color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
-                        ', '+color('red', assertFailures+' fail'+plural(assertFailures))+
-                        ', and '+color('magenta', exceptions+' exception'+plural(exceptions))+"."
+                        ', '+color(failColor, assertFailures+' fail'+plural(assertFailures))+
+                        ', and '+color(exceptionColor, exceptions+' exception'+plural(exceptions))+"."
                         +color('grey', " Took "+durationText+".")
 
                 var result = ''
@@ -148,7 +149,7 @@ function valueToMessage(value) {
     if(value instanceof Error) {
         return errorToString(value)
     } else {
-        return util.inspect(value)
+        return prettyPrint(value)
     }
 }
 
@@ -187,7 +188,16 @@ function valueToString(v) {
     } else if(typeof(v) === 'string') {
         return v
     } else {
-        return util.inspect(v)
+        return prettyPrint(v)
+    }
+}
+
+function prettyPrint(value) {
+    try {
+        return util.inspect(value)
+    } catch(e) {
+        console.log(e)
+        return "<error printing value>"
     }
 }
 

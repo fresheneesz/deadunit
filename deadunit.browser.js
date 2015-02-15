@@ -39,6 +39,9 @@ module.exports = deadunitInternal({
                         append(domNode, output)
                         written.return()
                         f.return()
+                    }).catch(function(e) {
+                        written.throw(e)
+                        f.throw(e)
                     })
                 },
 

@@ -196,6 +196,7 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
+* Remove click event from title of the box (only toggle whether the box is open via its bar)
 * Add tap output http://testanything.org/
 * Add karma integration
 * remove colors from code the browser accesses (again) and consider moving to webpack for your bundle generation
@@ -240,6 +241,10 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.8
+    * fixing but that happens if util.inspect throws an exception (can happen if certain dom node objects are passed as values)
+    * minor color fix
+    * minor exception handling fix in writeHtml
 * 5.1.7 - updating core
 * 5.1.6 - updating core
 * 5.1.5 - updating core
