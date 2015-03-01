@@ -1,7 +1,6 @@
 <body>
 </body>
 <script src='node_modules/requirejs/require.js'></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script>
     "use strict";
 
@@ -9,11 +8,12 @@
         paths: {
             "deadunit": "browserPackage/deadunit.browser.gen.umd",
             "deadunitTests": "test/generated/deadunitTests.browser.umd",
-            "future": "node_modules/async-future/generatedBuilds/asyncFuture.umd"
+            "future": "node_modules/async-future/generatedBuilds/asyncFuture.umd",
+            "blocks": "node_modules/blocks.js/dist/blocks.umd"
         }
     })
 
-    require(['deadunit', 'deadunitTests', 'future'], function(Unit, deadunitTests, Future) {
+    require(['deadunit', 'deadunitTests', 'future', 'blocks'], function(Unit, deadunitTests, Future, blocks) {
         deadunitTests.getTests(Unit, {
             env: 'browser',
 
@@ -22,7 +22,9 @@
             },
 
             print: function print(str) {
-                $('body').append(str.replace(new RegExp("\n", 'g'), "<br>"))
+                /*var text = blocks.Text(str)
+                text.domNode.style.color = 'white'
+                text.attach()*/
             },
             reset: function() {
                 window.onerror = function() {}
@@ -31,12 +33,8 @@
 
         function browserPrintTest(test) {
             var f = new Future
-            test.events({
-                end: function() {
-                    test.writeHtml().then(function() {
-                        f.return()
-                    })
-                }
+            test.writeHtml().then(function() {
+                f.return()
             })
 
             return f

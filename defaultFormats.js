@@ -1,9 +1,8 @@
-var util = require("util")
-
 var Future = require('async-future')
 
 var formatBasic = require("./basicFormatter")
 var indent = require("./indent")
+var utils = require("./utils")
 
 // unitTest is a deadunit-core UnitTest object
 // if consoleColoring is true, the string will contain console color annotations
@@ -62,7 +61,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
                 exceptionColor = 'magenta'
             }
 
-            var durationText = timeText(totalDuration)
+            var durationText = utils.timeText(totalDuration)
 
             if(nestingLevel === 0) {
                 var resultsLine = ''
@@ -72,9 +71,9 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
 
 
                 resultsLine += color(finalColor, testSuccesses+'/'+(testSuccesses+testFailures)+' successful tests. ')+
-                        color('green', assertSuccesses+' pass'+plural(assertSuccesses,"es",""))+
-                        ', '+color(failColor, assertFailures+' fail'+plural(assertFailures))+
-                        ', and '+color(exceptionColor, exceptions+' exception'+plural(exceptions))+"."
+                        color('green', assertSuccesses+' pass'+utils.plural(assertSuccesses,"es",""))+
+                        ', '+color(failColor, assertFailures+' fail'+utils.plural(assertFailures))+
+                        ', and '+color(exceptionColor, exceptions+' exception'+utils.plural(exceptions))+"."
                         +color('grey', " Took "+durationText+".")
 
                 var result = ''
@@ -89,7 +88,7 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
                 if(!name) name = "<unnamed test>"
                 var result = color(finalColor, name)+':           '
                                 +color(testColor, testSuccesses+'/'+total)
-                                +" and "+color(exceptionColor, exceptionResults.length+" exception"+plural(exceptionResults.length))
+                                +" and "+color(exceptionColor, exceptionResults.length+" exception"+utils.plural(exceptionResults.length))
                                 +color('grey', " took "+durationText)
                 result += addResults()
             }
@@ -114,9 +113,9 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
             if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
                 var things = []
                 if(result.expected !== undefined)
-                    things.push("Expected "+valueToMessage(result.expected))
+                    things.push("Expected "+utils.valueToMessage(result.expected))
                 if(result.actual !== undefined)
-                    things.push("Got "+valueToMessage(result.actual))
+                    things.push("Got "+utils.valueToMessage(result.actual))
 
                 expectations = " - "+things.join(', ')
             }
@@ -132,11 +131,11 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
         },
         exception: function(e, onTheFly) {
             return lateEventsWarning()+color('red', 'Exception: ')
-                        +color('magenta', errorToString(e))
+                        +color('magenta', utils.errorToString(e))
         },
         log: function(values, onTheFly) {
             return lateEventsWarning()+values.map(function(v) {
-                return valueToString(v)
+                return utils.valueToString(v)
             }).join(', ')
         },
         end: function() {
@@ -145,61 +144,42 @@ exports.text = function textOutput(unitTest, consoleColors, printOnTheFly, print
     })
 }
 
-function valueToMessage(value) {
-    if(value instanceof Error) {
-        return errorToString(value)
-    } else {
-        return prettyPrint(value)
-    }
+
+var htmlColors = exports.htmlColors = {
+    red: 'rgb(200,30,30)',
+    darkRed: 'rgb(90,0,0)',
+    lightRed: 'rgb(255,210,230)',
+
+    black: 'rgb(20,20,20)',
+    white: 'rgb(240,220,220)',
+    gray: 'rgb(185, 180, 180)',
+
+    green: 'rgb(0,100,20)',
+    brightGreen: 'rgb(0,200,50)',
+
+    purple: 'rgb(190,0,160)',
+    brightPurple: 'rgb(255,126,255)',
+
+    blue: 'rgb(0, 158, 173)',
+    brightBlue: 'rgb(0, 233, 255)',
+
+    yellow: 'rgb(210,182,0)',
+    darkYellow: 'rgb(106,93,0)'
 }
 
-function errorToString(err) {
-    if(err instanceof Error) {
-        var otherProperties = []
-        for(var n in err) {
-            if(Object.hasOwnProperty.call(err, n) && n !== 'message' && n !== 'stack') {
-                otherProperties.push(valueToString(err[n]))
-            }
-        }
+var red = htmlColors.red
+var darkRed = htmlColors.darkRed
+var lightRed = htmlColors.lightRed
+var black = htmlColors.black
+var white = htmlColors.white
+var green = htmlColors.green
+var brightGreen = htmlColors.brightGreen
+var purple = htmlColors.purple
+var brightPurple = htmlColors.brightPurple
+var blue = htmlColors.blue
+var brightBlue = htmlColors.brightBlue
+var gray = htmlColors.gray
 
-        var properties = ''
-        if(otherProperties.length > 0)
-            properties = '\n'+otherProperties.join("\n")
-
-
-        if(err.stack !== undefined) {
-            if(err.stack.indexOf(err.message) !== -1) { // chrome
-                return err.stack+properties
-            } else { // firefox (others?)
-                return err.message+'\n'+err.stack+properties
-            }
-        } else {
-            return err.toString()+properties
-        }
-    } else {
-        return err
-    }
-}
-
-function valueToString(v) {
-    if(v instanceof Error) {
-        return errorToString(v)
-
-    } else if(typeof(v) === 'string') {
-        return v
-    } else {
-        return prettyPrint(v)
-    }
-}
-
-function prettyPrint(value) {
-    try {
-        return util.inspect(value)
-    } catch(e) {
-        console.log(e)
-        return "<error printing value>"
-    }
-}
 
 exports.html = function(unitTest, printLateEvents) {
     if(printLateEvents === undefined) printLateEvents = true
@@ -222,19 +202,6 @@ exports.html = function(unitTest, printLateEvents) {
         }
     }
 
-    var red = 'rgb(200,30,30)'
-    var darkRed = 'rgb(90,0,0)'
-    var lightRed = 'rgb(255,210,230)'
-    var black = 'rgb(20,20,20)'
-    var white = 'rgb(240,220,220)'
-    var green = 'rgb(0,100,20)'
-    var brightGreen = 'rgb(0,200,50)'
-    var purple = 'rgb(190,0,160)'
-    var brightPurple = 'rgb(255,126,255)'
-    var blue = 'rgb(0, 158, 173)'
-    var brightBlue = 'rgb(0, 233, 255)'
-    var gray = 'rgb(185, 180, 180)'
-
 
     var formattedTestHtml = formatBasic(unitTest, false, {
         group: function(name, totalDuration, testSuccesses, testFailures,
@@ -254,7 +221,7 @@ exports.html = function(unitTest, printLateEvents) {
                 var foregroundColor = brightGreen
             }
 
-            var durationText = timeText(totalDuration)
+            var durationText = utils.timeText(totalDuration)
 
             if(nestingLevel === 0) {
 
@@ -290,9 +257,9 @@ exports.html = function(unitTest, printLateEvents) {
                             '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
                                 '<div style="float:right;"><i>click on this bar</i></div>'+
                                 '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful tests. '+
-                                '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
-                                ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
-                                ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+
+                                '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+utils.plural(assertSuccesses,"es","")+'</span>'+
+                                ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+utils.plural(assertFailures)+'</span>'+
+                                ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+utils.plural(exceptions)+'</span>'+
                                 '. <span style="color: '+white+'">Took '+durationText+".</span>"+
                             '</div>'+
                        '</div>'+
@@ -326,7 +293,7 @@ exports.html = function(unitTest, printLateEvents) {
                 return '<div class="resultsArea" id="'+mainId+n+'">'+
                             '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+
                                 name+': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-                                testSuccesses+'/'+total+" and "+exceptions+" exception"+plural(exceptions)
+                                testSuccesses+'/'+total+" and "+exceptions+" exception"+utils.plural(exceptions)
                                 +' <span style="color: white">took '+durationText+'</span>'+
                             '</div>'+
                             '<div class="resultsAreaInner" id="'+testId+'_inner">'+
@@ -347,7 +314,7 @@ exports.html = function(unitTest, printLateEvents) {
                 var word = "Ok!";
             }
 
-            var linesDisplay = "<i>"+textToHtml(result.sourceLines)+"</i>";
+            var linesDisplay = "<i>"+utils.textToHtml(result.sourceLines)+"</i>";
             if(result.sourceLines.indexOf("\n") !== -1) {
                 linesDisplay = "<br>\n"+linesDisplay;
             }
@@ -356,9 +323,9 @@ exports.html = function(unitTest, printLateEvents) {
             if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
                 var things = []
                 if(result.expected !== undefined)
-                    things.push("Expected "+textToHtml(valueToMessage(result.expected)))
+                    things.push("Expected "+utils.textToHtml(utils.valueToMessage(result.expected)))
                 if(result.actual !== undefined)
-                    things.push("Got "+textToHtml(valueToMessage(result.actual)))
+                    things.push("Got "+utils.textToHtml(utils.valueToMessage(result.actual)))
 
                 expectations = " - "+things.join(', ')
             }
@@ -377,13 +344,13 @@ exports.html = function(unitTest, printLateEvents) {
             +"</div>"
         },
         exception: function(exception) {
-            var formattedException = textToHtml(errorToString(exception))
+            var formattedException = utils.textToHtml(utils.errorToString(exception))
             return '<div style="color:'+purple+';">Exception: '+formattedException+'</div>'
         },
         log: function(values) {
             return '<div>'
                 +values.map(function(v) {
-                    return textToHtml(valueToString(v))
+                    return utils.textToHtml(utils.valueToString(v))
                 }).join(', ')
             +'</div>'
 
@@ -466,36 +433,3 @@ var getNewNumber = function() {
 }
 getNewNumber.n = 0
 
-function plural(num, plural, singular) {
-	var plur = num!==1;
-
-    if(singular === undefined) {
-    	if(plur)	return "s"
-        else        return ""
-    } else {
-    	if(plur)	return plural
-        else		return singular
-    }
-}
-function htmlEscape(str) {
-    return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-}
-
-function textToHtml(text) {
-    return htmlEscape(text)
-            .replace(/ /g, '&nbsp;')
-            .replace(/\n/g, "<br>\n")
-            .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
-}
-
-function timeText(ms) {
-    if(ms < 2000)
-        return ms+"ms"
-    else
-        return Number(ms/1000).toPrecision(3)+'s'
-}

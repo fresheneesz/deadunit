@@ -53,6 +53,13 @@ exports.getTests = function(Unit, options) {
     }
 
 
+
+
+
+
+
+
+
     var simpleSuccess, simpleFailure, simpleException, simpleExceptionNoTrace, simpleAsyncException, simpleTimeout, testGroups
     //*
     Future(true)
@@ -240,7 +247,9 @@ exports.getTests = function(Unit, options) {
 
         var test = Unit.test('should print late-events warning', function(t) {
             setTimeout(function() {
-                t.ok(true)
+                t.test("late test", function(t) {
+                    t.ok(true)
+                })
             },500)
         })
 
@@ -263,6 +272,8 @@ exports.getTests = function(Unit, options) {
                     attr.value = value
                     domNode.setAttributeNode(attr)
                 }
+
+                console.log("You should see 4 DOMExceptions on the console soon:")
 
                 var util = require("util")
                 var x = document.createElement("input");
@@ -410,7 +421,7 @@ exports.getTests = function(Unit, options) {
 
             this.test("nameless subtest", function() {
                 options.reset()
-                var test = Unit.test(function() {
+                var test = Unit.test("nameless subtest", function() {
                     this.test(function() {
                         this.ok(true)
                     })

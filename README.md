@@ -84,7 +84,7 @@ require(['node_modules/browserPackage/deadunit.browser.gen.umd'], function(Unit)
 ```javascript
 <script src="/node_modules/deadunit/browserPackage/deadunit.browser.gen.umd.js"></script>
 <script>
-var Unit = deadunit.browser.gen
+var Unit = deadunit
 </script>
 ```
 
@@ -196,11 +196,8 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
-* Remove click event from title of the box (only toggle whether the box is open via its bar)
 * Add tap output http://testanything.org/
 * Add karma integration
-* remove colors from code the browser accesses (again) and consider moving to webpack for your bundle generation
-* remove dependency on jquery
 * Test deadunit on more browsers and browser versions
 * add the ability to stream test results to a browser
 * Also see [the todos for deadunit-core](https://github.com/fresheneesz/deadunitCore#to-do)
@@ -241,6 +238,14 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.9
+    * Removing inner titles in sub-groups in the writeHtml output
+    * Moved to webpack for building bundles (for easier development)
+    * vastly improving writeHtml so that output is written on the fly as events come in (instead of all at once after the test is completed)
+    * coloring late events and groups yellow
+    * fixing test-name printing in script hanging warning
+    * removing dependence on jquery for writeHtml
+    * upping versions of various dependencies for all their improvements
 * 5.1.8
     * fixing but that happens if util.inspect throws an exception (can happen if certain dom node objects are passed as values)
     * minor color fix
