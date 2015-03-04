@@ -79,6 +79,7 @@ module.exports = deadunitInternal({
 
                     if(group.parentGroup !== undefined && group.state.subject.success) {
                         group.parentGroup.title.passed++
+                        group.parentGroup.updateTitle()
                     }
 
                     lateEventCheck()
@@ -264,12 +265,12 @@ var mainGroupStyle = Style({
 
     ResultLine: {
         $state: function(state) {
-            if(state.late) {
-                var textColor = color.yellow
-            } else if(state.success) {
-                var textColor = color.green
-            } else {
+            if(!state.success) {
                 var textColor = color.red
+            } else if(state.late) {
+                var textColor = color.yellow
+            } else {
+                var textColor = color.green
             }
 
             return Style({color: textColor})
@@ -348,6 +349,7 @@ var Group = proto(Line, function() {
         this.results.addAt(0, countBlock)
         this.title.total++
 
+        updateCountSuccess(this)   // must be run before updateTitle (because it modifies info updateTitle relies on)
         this.updateTitle()
     }
 
@@ -365,6 +367,7 @@ var Group = proto(Line, function() {
             this.mainGroup.title.testTotalFailures++
         }
 
+        updateCountSuccess(this)   // must be run before updateTitle (because it modifies info updateTitle relies on)
         this.updateTitle()
     }
 
@@ -384,23 +387,15 @@ var Group = proto(Line, function() {
 
         this.title.total++
 
+        updateCountSuccess(this)   // must be run before updateTitle (because it modifies info updateTitle relies on)
         this.updateTitle()
     }
 
     this.end = function(time) {
-        // figure out if count succeeded
-        if(this.expected !== undefined) {
-            var countSuccess = this.count === this.expected
-            this.countBlock.state.set("success", countSuccess)
+        //updateCountSuccess(this, true) // must be run before groupEnded is set (because it relies on groupEnded being false at this point)
+        if(this.expected !== undefined && !(this.count === this.expected)) this.mainGroup.title.testTotalFailures++
 
-            if(countSuccess) {
-                this.mainGroup.title.testTotalPasses++
-                this.title.passed++
-            } else {
-                this.mainGroup.title.testTotalFailures++
-            }
-        }
-
+        this.groupEnded = true
         this.updateTitle()
         if(!(this instanceof MainGroup)) {
             this.title.add(Text('timeElapsed', ' took '+(time - this.startTime)+'ms'))
@@ -422,8 +417,32 @@ var Group = proto(Line, function() {
             block.state.set("success", success)
             block.state.set("late", ended)
         })
+
+        if(this.parentGroup !== undefined) this.parentGroup.updateTitle()
     }
 })
+
+// figure out if count succeeded and update the main group and the countblock state
+function updateCountSuccess(that) {
+    if(that.expected !== undefined) {
+        var countSuccess = that.count === that.expected
+        that.countBlock.state.set("success", countSuccess)
+        if(that.groupEnded) that.countBlock.results.state.set("late", true)
+
+        if(countSuccess) {
+            that.mainGroup.title.testTotalPasses++
+            that.title.passed++
+            if(that.groupEnded) {
+                that.mainGroup.title.testTotalFailures--
+                that.groupEndCountSubtracted = true // marks that failures were subtracted after the test finished (so successes can be later subtracted correctly if need be)
+            }
+        } else if(that.groupEndCountSubtracted) {
+            that.mainGroup.title.testTotalFailures++
+            that.mainGroup.title.testTotalPasses--
+            that.title.passed--
+        }
+    }
+}
 
 var MainGroup = proto(Group, function(superclass) {
     this.name = "MainGroup"
@@ -439,6 +458,7 @@ var MainGroup = proto(Group, function(superclass) {
 
         var mainTitle = Text('mainTitle', groupTitle)
         this.addAt(0, mainTitle)
+        this.add(this.pendingText=Text("Pending..."))
 
         mainTitle.on('click', function() {
             this.results.visible = !this.results.visible
@@ -449,8 +469,10 @@ var MainGroup = proto(Group, function(superclass) {
         if(type === 'timeout')
             this.add(Text('timeout', "The test timed out!"))
 
+        this.pendingText.visible = false
         this.updateTitle()
         this.testTotalTime = getTimeDisplay(time - this.startTime)
+        this.title.takenText.text = "Took "
         this.ended = true
     }
 })
@@ -523,7 +545,7 @@ var MainBar = proto(GroupTitle, function() {
             Container('passes', this.testTotalPassesNode, Text(" pass"), this.testTotalPassesPlural), Text(", "),
             Container('failures', this.testTotalFailuresNode, Text(" failure"),this.testTotalFailuresPlural), Text(", and "),
             Container('exceptions', this.testTotalExceptionsNode, Text(" exception"), this.testTotalExceptionsPlural), Text(". "),
-            Container('time', Text("Took "), this.testTotalTimeNode, Text(".")),
+            Container('time', this.takenText=Text("Has taken "), this.testTotalTimeNode, Text(".")),
             Container('clickText', Text("click on this bar"))
         )
     }
@@ -583,6 +605,11 @@ var Assert = proto(Line, function() {
 
         this.results = ResultLine(text, sourceLines, file, line, column, expected, actual)
         this.add(this.results)
+
+        var that = this
+        this.state.on('change', function() {
+            that.results.expectedAndActual.visible = !that.state.subject.success
+        })
 
         this.state.set("success", success)
         this.results.state.set("success", success)
@@ -646,187 +673,3 @@ function getTimeDisplay(milliseconds) {
     }
 }
 
-
-
-
-            /*
-
-                color: '+gray+';\
-            }\
-            .resultsArea{\
-                margin:1px;\
-                margin-bottom: 5px;\
-            }\
-                .resultsAreaInner{\
-                    padding:0 8px;\
-                }\
-                .resultsBar{\
-                    color:white;\
-                    margin-bottom:4px;\
-                    padding: 1px 3px;\
-                }\
-            .testResultsArea{\
-                padding:0 8px;\
-            }\
-            .testResultsBar{\
-                background-color:'+black+';color:white;margin:4px 0;\
-            }\
-                .testResultsBarInner{\
-                    color:white;margin:1px;padding: 1px 3px;\
-                }\
-                \
-
-                group: function(name, totalDuration, testSuccesses, testFailures,
-                              assertSuccesses, assertFailures, exceptions,
-                              testResults, exceptionResults, nestingLevel, timedOut) {
-
-                var total = testSuccesses+testFailures
-                var mainId = getMainId(name)
-
-                if(testFailures > 0 || exceptions > 0) {
-                    var bgcolor=red;
-                    var show = "true";
-                    var foregroundColor = lightRed
-                } else {
-                    var bgcolor=green;
-                    var show = "false";
-                    var foregroundColor = brightGreen
-                }
-
-                var durationText = timeText(totalDuration)
-
-                if(nestingLevel === 0) {
-
-                    var initTestGroup = function(mainId, bgcolor, show) {
-                        $(function()
-                        {	$('#'+mainId).css({"border-color":"'+bgcolor+'"});
-                            TestDisplayer.onToggle(show, bgcolor, '#'+mainId);
-
-                            $('#'+mainId+'_final').click(function()
-                            {	TestDisplayer.onToggle($('#'+mainId).css("display") == "none", bgcolor, '#'+mainId);
-                            });
-                        });
-                    }
-
-                    var nameLine = "", titleLine = ''
-                    if(name) {
-                        titleLine = '<h1 class="primaryTitle">'+name+'</h1>'
-                        nameLine = name+' - '
-                    }
-
-                    var timeoutNote = ""
-                    if(timedOut) {
-                        timeoutNote = 'The test timed out'
-                    }
-
-                    return titleLine+
-                           '<div class="testResultsArea" id="'+mainId+'">'+
-                                testResults.join('\n')+
-                                exceptionResults.join('\n')+"\n"+
-                                '<div style="color:'+red+'">'+timeoutNote+'</div>'+
-                           '</div>'+
-                           '<div class="testResultsBar link" style="border:2px solid '+bgcolor+';" id="'+mainId+'_final">'+
-                                '<div class="testResultsBarInner" style="background-color:'+bgcolor+';">'+
-                                    '<div style="float:right;"><i>click on this bar</i></div>'+
-                                    '<div><span class="testResultsName">'+nameLine+'</span>' + testSuccesses+'/'+total+' successful tests. '+
-                                    '<span style="color:'+brightGreen+'">'+assertSuccesses+' pass'+plural(assertSuccesses,"es","")+'</span>'+
-                                    ', <span style="color:'+darkRed+'">'+assertFailures+' fail'+plural(assertFailures)+'</span>'+
-                                    ', and <span style="color:'+brightPurple+'">'+exceptions+' exception'+plural(exceptions)+'</span>'+
-                                    '. <span style="color: '+white+'">Took '+durationText+".</span>"+
-                                '</div>'+
-                           '</div>'+
-
-                           '<script>;('+initTestGroup+')("'+mainId+'", "'+bgcolor+'", '+show+')</script>'+
-                           '</div>'
-
-                } else {
-                    var n = getNewNumber()
-
-                    var testId = mainId+n
-
-                    var initTest = function(mainId, bgcolor, show, n) {
-                        $(function()
-                        {	$('#'+mainId).css({borderColor:bgcolor});
-                            TestDisplayer.onToggle(show, bgcolor, '#'+mainId+n+'_inner', '#'+mainId+n);
-
-                            $('.'+mainId+n+'_status').click(function()
-                            {	TestDisplayer.onToggle
-                                (	$('#'+mainId+n+'_inner').css("display") == "none",
-                                    bgcolor,
-                                    '#'+mainId+n+'_inner',
-                                    '#'+mainId+n+''
-                                );
-                            });
-                        });
-                    }
-
-                    if(!name) name = "<unnamed test>"
-
-                    return '<div class="resultsArea" id="'+mainId+n+'">'+
-                                '<div class="resultsBar link '+mainId+n+'_status" style="background-color:'+bgcolor+';color:'+foregroundColor+'">'+
-                                    name+': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-                                    testSuccesses+'/'+total+" and "+exceptions+" exception"+plural(exceptions)
-                                    +' <span style="color: white">took '+durationText+'</span>'+
-                                '</div>'+
-                                '<div class="resultsAreaInner" id="'+testId+'_inner">'+
-                                    '<h2 class="'+testId+'_status link" style="color:'+bgcolor+';">'+name+'</h2>'+
-                                    testResults.join('\n')+"\n"+
-                                    exceptionResults.join('\n')+"\n"+
-                                '</div>'+
-                                '<script>;('+initTest+')("'+mainId+'", "'+bgcolor+'", '+show+', '+n+')</script>'+
-                          '</div>';
-                }
-            },
-            assert: function(result) {
-                if(false === result.success) {
-                    var color = red;
-                    var word = "Fail:";
-                } else {
-                    var color = green;
-                    var word = "Ok!";
-                }
-
-                var linesDisplay = "<i>"+textToHtml(result.sourceLines)+"</i>";
-                if(result.sourceLines.indexOf("\n") !== -1) {
-                    linesDisplay = "<br>\n"+linesDisplay;
-                }
-
-                var expectations = ""
-                if(!result.success && (result.actual !== undefined || result.expected !== undefined)) {
-                    var things = []
-                    if(result.expected !== undefined)
-                        things.push("Expected "+textToHtml(valueToMessage(result.expected)))
-                    if(result.actual !== undefined)
-                        things.push("Got "+textToHtml(valueToMessage(result.actual)))
-
-                    expectations = " - "+things.join(', ')
-                }
-
-                var column = ''
-                if(result.column !== undefined) {
-                    column = ":"+result.column
-                }
-
-                return '<div style="color:'+color+';"><span >'+word+'</span>'+
-                            " <span class='locationOuter'>[<span class='locationInner'>"
-                                    +result.file+" line <span class='lineNumber'>"+result.line+"</span>"+column+"</span>]"
-                            +"</span> "
-                        +linesDisplay
-                        +' <span class="expectations">'+expectations+'</span>'
-                +"</div>"
-            },
-            exception: function(exception) {
-                var formattedException = textToHtml(errorToString(exception))
-                return '<div style="color:'+purple+';">Exception: '+formattedException+'</div>'
-            },
-            log: function(values) {
-                return '<div>'
-                    +values.map(function(v) {
-                        return textToHtml(valueToString(v))
-                    }).join(', ')
-                +'</div>'
-
-            }
-
-
-                    */

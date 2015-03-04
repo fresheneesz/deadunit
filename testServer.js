@@ -16,12 +16,16 @@ var server = http.createServer(function (request, res) {
                 path = '/testDeadunit.html'
             }
 
+            if(path.slice(-2) === 'js') {
+                res.setHeader("Content-Type", 'text/javascript')
+            }
             res.writeHead(200)
             res.write(fs.readFileSync(__dirname+path))
-            res.end()
         }
     } catch(e) {
         console.log(e.message)
+    } finally {
+        res.end()
     }
 })
 
