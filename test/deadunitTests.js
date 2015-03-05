@@ -151,6 +151,31 @@ exports.getTests = function(Unit, options) {
 
     })
     .then(function() {
+        announce("simple timeout / late successful count")
+        options.reset()
+        simpleTimeout = Unit.test(function(t) {
+            this.timeout(100)
+            this.count(1)
+            setTimeout(function() {
+                t.ok(true)
+            },300)
+        })
+        return printTestOutput(simpleTimeout, 'simpleTimeout', 500)
+    })
+    .then(function() {
+        announce("simple timeout / late successful then unsuccessful count")
+        options.reset()
+        simpleTimeout = Unit.test(function(t) {
+            this.timeout(100)
+            this.count(1)
+            setTimeout(function() {
+                t.ok(true)
+                t.ok(true)
+            },300)
+        })
+        return printTestOutput(simpleTimeout, 'simpleTimeout', 500)
+    })
+    .then(function() {
         announce("toString")
         options.reset()
 
@@ -248,7 +273,9 @@ exports.getTests = function(Unit, options) {
         var test = Unit.test('should print late-events warning', function(t) {
             setTimeout(function() {
                 t.test("late test", function(t) {
-                    t.ok(true)
+                    t.test("late test innre", function(t) {
+                        t.ok(true)
+                    })
                 })
             },500)
         })
@@ -420,6 +447,8 @@ exports.getTests = function(Unit, options) {
             })
 
             this.test("nameless subtest", function() {
+                // note that this subgroup itself should be empty but the unit test inside it shouldn't \/
+
                 options.reset()
                 var test = Unit.test("nameless subtest", function() {
                     this.test(function() {

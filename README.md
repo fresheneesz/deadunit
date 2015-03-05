@@ -1,4 +1,3 @@
-
 `deadunit`
 ========
 
@@ -196,6 +195,9 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
+* Make it so that when run without a server, it emits a small note that explains that you can't get source files with the file:// protocol
+    * add an example node http server in the docs so people can just take it and use it easily so they can get sourcelines in their test
+
 * Add tap output http://testanything.org/
 * Add karma integration
 * Test deadunit on more browsers and browser versions
@@ -238,6 +240,11 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.10
+    * fixing bug: writeHtml - Got and expected printing when the test passes
+    * fixing bug: writeHtml - Fails aren't turning red when they're late
+    * fixing bug: writeHtml - counts that get to their full count late A. don't turn yellow and B. the test doesn't get the count and is treated as a failure
+    * fixing a couple other edge-case bugs in writeHtml
 * 5.1.9
     * Removing inner titles in sub-groups in the writeHtml output
     * Moved to webpack for building bundles (for easier development)
