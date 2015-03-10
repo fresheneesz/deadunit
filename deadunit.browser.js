@@ -436,10 +436,12 @@ function updateCountSuccess(that) {
                 that.mainGroup.title.testTotalFailures--
                 that.groupEndCountSubtracted = true // marks that failures were subtracted after the test finished (so successes can be later subtracted correctly if need be)
             }
-        } else if(that.groupEndCountSubtracted) {
-            that.mainGroup.title.testTotalFailures++
-            that.mainGroup.title.testTotalPasses--
+        } else if(that.groupEndCountSubtracted || that.count - 1 === that.expected) {
             that.title.passed--
+            that.mainGroup.title.testTotalPasses--
+            if(that.groupEnded) {
+                that.mainGroup.title.testTotalFailures++
+            }
         }
     }
 }

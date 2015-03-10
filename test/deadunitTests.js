@@ -141,6 +141,19 @@ exports.getTests = function(Unit, options) {
 
     })
     .then(function() {
+        announce("overcount")
+        options.reset()
+        var overcount = Unit.test(function() {
+            this.test("inner", function() {
+                this.count(1)
+                this.ok(true)
+                this.ok(true)
+            })
+        })
+        return printTestOutput(overcount, 'overcount', 500)
+
+    })
+    .then(function() {
         announce("simple timeout / failed count")
         options.reset()
         simpleTimeout = Unit.test(function() {
@@ -317,7 +330,7 @@ exports.getTests = function(Unit, options) {
         }
     }).then(function() {
 
-        announce("<br> What you've all been waiting for - the real test")
+        announce("What you've all been waiting for - the real test")
 
         var realTest = Unit.test("Testing basicFormatter (this should succeed)", function() {
             var formatBasic = require("../basicFormatter")

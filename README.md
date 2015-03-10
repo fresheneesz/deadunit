@@ -195,6 +195,8 @@ This needs more testing! Please help by testing and reporting bugs in other brow
 Todo
 ====
 
+* for writeHtml, make unfinished tests gray (only change to red if they are for sure failures)
+
 * Make it so that when run without a server, it emits a small note that explains that you can't get source files with the file:// protocol
     * add an example node http server in the docs so people can just take it and use it easily so they can get sourcelines in their test
 
@@ -240,6 +242,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.1.11 - fixing bug where test group wasn't being marked as a failure if its count expected less than it got
 * 5.1.10
     * fixing bug: writeHtml - Got and expected printing when the test passes
     * fixing bug: writeHtml - Fails aren't turning red when they're late
