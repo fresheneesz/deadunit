@@ -5,7 +5,7 @@ A *dead*-simple nesting unit testing module for testing in node.js and the brows
 This repository provides default visual representations for the output of [deadunit-core](https://github.com/fresheneesz/deadunitCore),
   as well as a formatter that can be used to easily create custom test visualizations.
 
-Why use it over [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https://github.com/caolan/nodeunit) / [Wizek's Tree](https://github.com/Wizek/Tree)
+Why use it over Jasmine / Mocha / Karma / Protractor / Node-Unit / QUnit / etc
 ==================
 
  * deadunit's *dead*-simple API only has two major ways to assert behavior (`ok` and `count`) making it easy to learn.
@@ -19,7 +19,7 @@ Why use it over [Jasmine](http://pivotal.github.io/jasmine/) / [Node-Unit](https
  * it prints out exception *and* any attached data they have
  * it'll let you know if your code is hanging (something you don't want, but usually goes unnoticed)
  * deadunit supports testing code that uses [node fibers](https://github.com/laverdet/node-fibers)
- * deadunit's output is easier to visually parse than jasmine, or wizek's tree, and much easier than node-unit
+ * deadunit's output is easier to visually parse than Jasmine, or [Wizek's Tree](https://github.com/Wizek/Tree), and much easier than node-unit
 
 Example
 =======
