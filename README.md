@@ -242,6 +242,7 @@ How to submit pull requests:
 Change Log
 =========
 
+* 5.2.0 - pulling in update from deadunitCore to change the operation of timeout
 * 5.1.12 - pulling in update from deadunitCore (for 2 minor bug fixes)
 * 5.1.11 - fixing bug where test group wasn't being marked as a failure if its count expected less than it got
 * 5.1.10
