@@ -1,7 +1,7 @@
 `deadunit`
 ========
 
-A *dead*-simple nesting unit testing module for testing in node.js and the browser!.
+A *dead*-simple nesting unit testing module for testing in node.js and the browser!
 This repository provides default visual representations for the output of [deadunit-core](https://github.com/fresheneesz/deadunitCore),
   as well as a formatter that can be used to easily create custom test visualizations.
 

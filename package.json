@@ -4,7 +4,7 @@
  "version":"5.1.12",
  "dependencies":{
      "colors":"https://github.com/fresheneesz/colors.js/archive/e990804d7c301765409770582c6aa6d562a23198.tar.gz",
-     "deadunit-core":"5.0.18",
+     "deadunit-core":"5.0.20",
      "proto":"1.0.17",
      "async-future":"0.1.18",
      "blocks.js":"0.9.14"
