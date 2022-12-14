@@ -235,7 +235,7 @@ How to submit pull requests:
     * open test/allGenerated.node.html in browsers
     * open test/testDeadunitBrowserGlobal.html in browsers
     * open testDeadunit.html in browsers
-    * run `node testServer` and open http://localhost:8000/ in browsers
+    * run `node testServer` and open http://localhost:8100/ in browsers
 8. Commit and push your changes
 9. Submit a pull request: https://help.github.com/articles/creating-a-pull-request
 
